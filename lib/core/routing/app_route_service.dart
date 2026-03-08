@@ -15,5 +15,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ProfileRoute.page),
       ],
     ),
+    AutoRoute(page: IllnessTypeRoute.page),
   ];
 }

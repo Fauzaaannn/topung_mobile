@@ -2,31 +2,25 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
+import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
 import 'package:topung_mobile/presentation/widgets/cards/illness_category_card.dart';
 
 @RoutePage()
 class IllnessCategoryPage extends StatelessWidget {
   const IllnessCategoryPage({super.key});
 
-  // Nanti ini akan berasal dari BLoC/provider/repository
   static const _categories = [
     {
       'title': 'Penyakit Jantung',
       'description': 'Kumpulan penyakit yang mempengaruhi jantung.',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1588776814546-1c9b8e5f1a2c?auto=format&fit=crop&w=800&q=80',
     },
     {
       'title': 'Diabetes',
       'description': 'Kumpulan penyakit yang mempengaruhi kadar gula darah.',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1588776814546-1c9b8e5f1a2c?auto=format&fit=crop&w=800&q=80',
     },
     {
       'title': 'Penyakit Paru-paru',
       'description': 'Kumpulan penyakit yang mempengaruhi paru-paru.',
-      'imageUrl':
-          'https://images.unsplash.com/photo-1588776814546-1c9b8e5f1a2c?auto=format&fit=crop&w=800&q=80',
     },
   ];
 
@@ -59,9 +53,12 @@ class IllnessCategoryPage extends StatelessWidget {
           return IllnessCategoryCard(
             title: category['title']!,
             description: category['description']!,
-            imageUrl: category['imageUrl']!,
+            // imageUrl: category['imageUrl']!,
+            imageUrl: null,
             onTap: () {
-              // Navigate to detail page
+              context.router.push(
+                IllnessTypeRoute(categoryTitle: category['title']!),
+              );
             },
           );
         },
