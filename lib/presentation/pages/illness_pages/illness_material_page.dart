@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
+import 'package:topung_mobile/presentation/widgets/drawer/comment_bottom_sheet.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 @RoutePage()
@@ -53,54 +54,30 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
   }
 
   void _showCommentBottomSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: ColorConstant.greyLight,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Komentar',
-              style: TextStyle(
-                fontSize: FontConstant.fontSize16,
-                fontWeight: FontConstant.bold,
-                color: ColorConstant.black,
-                fontFamily: FontConstant.robotoFontFamily,
-              ),
-            ),
-            const Divider(),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Belum ada komentar',
-                  style: TextStyle(
-                    fontSize: FontConstant.fontSize14,
-                    color: ColorConstant.grey,
-                    fontFamily: FontConstant.robotoFontFamily,
-                  ),
-                ),
-              ),
-            ),
-          ],
+    CommentBottomSheet.show(
+      context,
+      initialChildSize: 0.65,
+      comments: const [
+        CommentItem(
+          username: 'Nama Pengguna',
+          comment: 'Komentar dari pengguna',
+          timeAgo: '10s',
         ),
-      ),
+        CommentItem(
+          username: 'Nama Pengguna',
+          comment: 'Komentar dari pengguna',
+          timeAgo: '10s',
+        ),
+        CommentItem(
+          username: 'Nama Pengguna',
+          comment: 'Komentar dari pengguna',
+          timeAgo: '10s',
+          isReply: true,
+        ),
+      ],
+      onSend: (text) {
+        // TODO: kirim komentar
+      },
     );
   }
 
