@@ -61,7 +61,9 @@ class ChatHistoryPage extends StatelessWidget {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          context.router.push(ChatRoute());
+        },
         backgroundColor: ColorConstant.primaryLight,
         elevation: 2,
         child: const Icon(
