@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
+import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
 import 'package:topung_mobile/presentation/widgets/cards/illness_type_card.dart';
 
 @RoutePage()
@@ -78,14 +79,25 @@ class _IllnessTypePageState extends State<IllnessTypePage> {
                 ? IllnessTypeCardStatus.bookmarked
                 : IllnessTypeCardStatus.none,
             onTap: () {
-              // TODO: navigasi ke detail penyakit
-            },
-            onStatusTap: () {
-              setState(() {
-                if (!_bookmarkedIndexes.add(index)) {
-                  _bookmarkedIndexes.remove(index);
-                }
-              });
+              context.router.push(
+                IllnessMaterialRoute(
+                  illnessName: illness['title'] as String,
+                  materialTitle:
+                      'Teknik Totok Punggung untuk ${illness['title']}',
+                  youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                  imageUrl: 'https://picsum.photos/seed/picsum/200/300',
+                  content:
+                      'Berdasarkan gambar dan informasi dari dokumen sebelumnya, '
+                      'teknik totok punggung untuk ${illness['title']} difokuskan '
+                      'pada beberapa titik spesifik di area punggung.\n\n'
+                      'Analisis teknik totok punggung:\n'
+                      '• Titik-titik Fokus: Tengkuk 2, Belikat Kiri / Titik Jantung 3, '
+                      'Belikat Kanan / Titik Tensi 4\n'
+                      '• Cara Melakukan Totok: Meskipun gambar hanya menunjukkan lokasi '
+                      'titik, dari bagian "GENERAL TREATMENT (GT)" dalam dokumen yang '
+                      'sama, dapat disimpulkan teknik yang digunakan.',
+                ),
+              );
             },
           );
         },
