@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:topung_mobile/core/modules/app_module.dart';
 import 'package:topung_mobile/core/routing/app_route_service.dart';
 
-final _appRouter = AppRouter();
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeAllModules();
   runApp(const MyApp());
 }
 
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00BCD4)),
       ),
-      routerConfig: _appRouter.config(),
+      routerConfig: serviceLocator<AppRouter>().config(),
     );
   }
 }
