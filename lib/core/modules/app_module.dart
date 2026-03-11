@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:topung_mobile/core/constant/endpoint_constant.dart';
 import 'package:topung_mobile/core/modules/provider_module.dart';
 import 'package:topung_mobile/core/modules/repository_module.dart';
+import 'package:topung_mobile/core/modules/usecase_module.dart';
 import 'package:topung_mobile/core/modules/service_module.dart';
 import 'package:topung_mobile/core/routing/app_route_service.dart';
 import 'package:topung_mobile/core/services/i_secure_storage_services.dart';
@@ -32,7 +33,9 @@ Future<void> _initializeExternalDependencies() async {
     );
 
     dio.interceptors.addAll([
-      ApiInterceptor(serviceLocator<ISecureStorageService>() as SecureStorageService),
+      ApiInterceptor(
+        serviceLocator<ISecureStorageService>() as SecureStorageService,
+      ),
       DebugLogInterceptor(),
     ]);
 
@@ -47,4 +50,5 @@ Future<void> initializeAllModules() async {
   initializeServiceModule();
   initializeProviderModule();
   initializeRepositoryModule();
+  initializeUsecaseModule();
 }
