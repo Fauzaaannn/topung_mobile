@@ -1,47 +1,54 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
+import 'package:topung_mobile/core/modules/app_module.dart';
 import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
+import 'package:topung_mobile/domain/usecases/illness_type_usecases/illness_type_usecase.dart';
+import 'package:topung_mobile/presentation/bloc/illness_type_bloc/illness_type_bloc.dart';
 import 'package:topung_mobile/presentation/widgets/cards/illness_type_card.dart';
 
 @RoutePage()
-class IllnessTypePage extends StatefulWidget {
-  final String categoryTitle;
-
+class IllnessTypePage extends StatelessWidget {
   const IllnessTypePage({
     super.key,
-    @PathParam('categoryTitle') required this.categoryTitle,
+    required this.categoryId,
+    required this.categoryTitle,
   });
 
+  final String categoryId;
+  final String categoryTitle;
+
   @override
-  State<IllnessTypePage> createState() => _IllnessTypePageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => IllnessTypeBloc(
+        illnessTypeUsecase: serviceLocator<IllnessTypeUsecase>(),
+      )..add(IllnessTypeFetched(categoryId: categoryId)),
+      child: _IllnessTypeView(
+        categoryId: categoryId,
+        categoryTitle: categoryTitle,
+      ),
+    );
+  }
 }
 
-class _IllnessTypePageState extends State<IllnessTypePage> {
-  final Set<int> _bookmarkedIndexes = <int>{};
+class _IllnessTypeView extends StatefulWidget {
+  const _IllnessTypeView({
+    required this.categoryId,
+    required this.categoryTitle,
+  });
 
-  // Nanti akan berasal dari BLoC/repository
-  static const _illnesses = [
-    {
-      'title': 'Serangan Jantung',
-      'description':
-          'Terjadi ketika aliran darah ke bagian otot jantung terhambat, biasanya karena sumbatan di pembuluh darah jantung. Gejala umum meliputi nyeri dada yang menjalar ke lengan kiri, leher, rahang, atau punggung, sesak napas...',
-      'imageUrl': null,
-    },
-    {
-      'title': 'Gagal Jantung',
-      'description':
-          'Kondisi kronis di mana jantung tidak mampu memompa darah secara efektif untuk memenuhi kebutuhan tubuh. Gejala utama meliputi sesak napas, kelelahan, dan pembengkakan pada kaki...',
-      'imageUrl': null,
-    },
-    {
-      'title': 'Aritmia',
-      'description':
-          'Gangguan irama jantung yang menyebabkan jantung berdetak terlalu cepat, terlalu lambat, atau tidak teratur. Bisa menyebabkan palpitasi, pusing, hingga pingsan...',
-      'imageUrl': null,
-    },
-  ];
+  final String categoryId;
+  final String categoryTitle;
+
+  @override
+  State<_IllnessTypeView> createState() => _IllnessTypeViewState();
+}
+
+class _IllnessTypeViewState extends State<_IllnessTypeView> {
+  final Set<String> _bookmarkedIds = {};
 
   @override
   Widget build(BuildContext context) {
@@ -65,41 +72,69 @@ class _IllnessTypePageState extends State<IllnessTypePage> {
         ),
         centerTitle: true,
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: _illnesses.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final illness = _illnesses[index];
-          return IllnessTypeCard(
-            title: illness['title'] as String,
-            description: illness['description'] as String,
-            imageUrl: illness['imageUrl'],
-            status: _bookmarkedIndexes.contains(index)
-                ? IllnessTypeCardStatus.bookmarked
-                : IllnessTypeCardStatus.none,
-            onTap: () {
-              context.router.push(
-                IllnessMaterialRoute(
-                  illnessName: illness['title'] as String,
-                  materialTitle:
-                      'Teknik Totok Punggung untuk ${illness['title']}',
-                  youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-                  imageUrl: 'https://picsum.photos/seed/picsum/200/300',
-                  content:
-                      'Berdasarkan gambar dan informasi dari dokumen sebelumnya, '
-                      'teknik totok punggung untuk ${illness['title']} difokuskan '
-                      'pada beberapa titik spesifik di area punggung.\n\n'
-                      'Analisis teknik totok punggung:\n'
-                      '• Titik-titik Fokus: Tengkuk 2, Belikat Kiri / Titik Jantung 3, '
-                      'Belikat Kanan / Titik Tensi 4\n'
-                      '• Cara Melakukan Totok: Meskipun gambar hanya menunjukkan lokasi '
-                      'titik, dari bagian "GENERAL TREATMENT (GT)" dalam dokumen yang '
-                      'sama, dapat disimpulkan teknik yang digunakan.',
-                ),
-              );
-            },
-          );
+      body: BlocBuilder<IllnessTypeBloc, IllnessTypeState>(
+        builder: (context, state) {
+          if (state is IllnessTypeLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is IllnessTypeFailure) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    state.message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: ColorConstant.black,
+                      fontFamily: FontConstant.robotoFontFamily,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.read<IllnessTypeBloc>().add(
+                      IllnessTypeFetched(categoryId: widget.categoryId),
+                    ),
+                    child: const Text('Coba Lagi'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (state is IllnessTypeSuccess) {
+            final items = state.data.items;
+            return ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = items[index];
+                return IllnessTypeCard(
+                  title: item.title,
+                  description: item.textContent,
+                  imageUrl: item.imageUrl.isNotEmpty ? item.imageUrl : null,
+                  status: _bookmarkedIds.contains(item.id)
+                      ? IllnessTypeCardStatus.bookmarked
+                      : IllnessTypeCardStatus.none,
+                  onTap: () {
+                    context.router.push(
+                      IllnessMaterialRoute(
+                        illnessName: item.title,
+                        materialTitle: item.title,
+                        youtubeUrl: item.videoUrl,
+                        imageUrl: item.imageUrl,
+                        content: item.textContent,
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          }
+
+          return const SizedBox.shrink();
         },
       ),
     );

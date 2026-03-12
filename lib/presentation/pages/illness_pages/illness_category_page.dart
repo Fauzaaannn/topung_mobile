@@ -94,7 +94,10 @@ class _IllnessCategoryView extends StatelessWidget {
                       : null,
                   onTap: () {
                     context.router.push(
-                      IllnessTypeRoute(categoryTitle: category.name),
+                      IllnessTypeRoute(
+                        categoryId: category.id,
+                        categoryTitle: category.name,
+                      ),
                     );
                   },
                 );

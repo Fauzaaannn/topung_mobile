@@ -205,12 +205,16 @@ class IllnessMaterialRouteArgs {
 class IllnessTypeRoute extends _i10.PageRouteInfo<IllnessTypeRouteArgs> {
   IllnessTypeRoute({
     _i11.Key? key,
+    required String categoryId,
     required String categoryTitle,
     List<_i10.PageRouteInfo>? children,
   }) : super(
          IllnessTypeRoute.name,
-         args: IllnessTypeRouteArgs(key: key, categoryTitle: categoryTitle),
-         rawPathParams: {'categoryTitle': categoryTitle},
+         args: IllnessTypeRouteArgs(
+           key: key,
+           categoryId: categoryId,
+           categoryTitle: categoryTitle,
+         ),
          initialChildren: children,
        );
 
@@ -219,14 +223,10 @@ class IllnessTypeRoute extends _i10.PageRouteInfo<IllnessTypeRouteArgs> {
   static _i10.PageInfo page = _i10.PageInfo(
     name,
     builder: (data) {
-      final pathParams = data.inheritedPathParams;
-      final args = data.argsAs<IllnessTypeRouteArgs>(
-        orElse: () => IllnessTypeRouteArgs(
-          categoryTitle: pathParams.getString('categoryTitle'),
-        ),
-      );
+      final args = data.argsAs<IllnessTypeRouteArgs>();
       return _i5.IllnessTypePage(
         key: args.key,
+        categoryId: args.categoryId,
         categoryTitle: args.categoryTitle,
       );
     },
@@ -234,26 +234,35 @@ class IllnessTypeRoute extends _i10.PageRouteInfo<IllnessTypeRouteArgs> {
 }
 
 class IllnessTypeRouteArgs {
-  const IllnessTypeRouteArgs({this.key, required this.categoryTitle});
+  const IllnessTypeRouteArgs({
+    this.key,
+    required this.categoryId,
+    required this.categoryTitle,
+  });
 
   final _i11.Key? key;
+
+  final String categoryId;
 
   final String categoryTitle;
 
   @override
   String toString() {
-    return 'IllnessTypeRouteArgs{key: $key, categoryTitle: $categoryTitle}';
+    return 'IllnessTypeRouteArgs{key: $key, categoryId: $categoryId, categoryTitle: $categoryTitle}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! IllnessTypeRouteArgs) return false;
-    return key == other.key && categoryTitle == other.categoryTitle;
+    return key == other.key &&
+        categoryId == other.categoryId &&
+        categoryTitle == other.categoryTitle;
   }
 
   @override
-  int get hashCode => key.hashCode ^ categoryTitle.hashCode;
+  int get hashCode =>
+      key.hashCode ^ categoryId.hashCode ^ categoryTitle.hashCode;
 }
 
 /// generated route for
