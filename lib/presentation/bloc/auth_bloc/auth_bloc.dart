@@ -30,13 +30,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       password: event.password,
     );
 
-    result.fold((failure) => emit(AuthFailure(message: failure)), (
-      response,
-    ) async {
+    if (result.isLeft()) {
+      final failure = result.fold((l) => l, (r) => '');
+      emit(AuthFailure(message: failure));
+    } else {
+      final response = result.getOrElse(() => throw Exception());
       await _secureStorageService.saveToken(response.accessToken);
       await _secureStorageService.saveRole(response.user.role);
       emit(LoginSuccess(role: response.user.role));
-    });
+    }
   }
 
   Future<void> _onLogoutRequested(
