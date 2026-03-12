@@ -2,9 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:topung_mobile/data/provider/remote/implementation/auth_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/implementation/illness_category_remote_provider.dart';
+import 'package:topung_mobile/data/provider/remote/implementation/illness_material_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/implementation/illness_type_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/interface/i_auth_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/interface/i_illness_category_remote_provider.dart';
+import 'package:topung_mobile/data/provider/remote/interface/i_illness_material_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/interface/i_illness_type_remote_provider.dart';
 
 final serviceLocator = GetIt.instance;
@@ -20,5 +22,9 @@ void initializeProviderModule() {
 
   serviceLocator.registerLazySingleton<IIllnessTypeRemoteProvider>(
     () => IllnessTypeRemoteProvider(serviceLocator<Dio>()),
+  );
+
+  serviceLocator.registerLazySingleton<IIllnessMaterialRemoteProvider>(
+    () => IllnessMaterialRemoteProvider(serviceLocator<Dio>()),
   );
 }
