@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:topung_mobile/data/model/pagination_meta_model/pagination_meta_model.dart';
 
 class IllnessCategoryModel extends Equatable {
   const IllnessCategoryModel({
@@ -23,31 +24,6 @@ class IllnessCategoryModel extends Equatable {
 
   @override
   List<Object?> get props => [id, name, description, imageUrl];
-}
-
-class PaginationMetaModel extends Equatable {
-  const PaginationMetaModel({
-    required this.page,
-    required this.pageSize,
-    required this.totalItems,
-    required this.totalPages,
-  });
-
-  final int page;
-  final int pageSize;
-  final int totalItems;
-  final int totalPages;
-
-  factory PaginationMetaModel.fromJson(Map<String, dynamic> json) =>
-      PaginationMetaModel(
-        page: json['page'] as int,
-        pageSize: json['pageSize'] as int,
-        totalItems: json['totalItems'] as int,
-        totalPages: json['totalPages'] as int,
-      );
-
-  @override
-  List<Object?> get props => [page, pageSize, totalItems, totalPages];
 }
 
 class IllnessCategoryPaginationModel extends Equatable {
