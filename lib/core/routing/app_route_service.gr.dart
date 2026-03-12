@@ -114,22 +114,11 @@ class IllnessMaterialRoute
     extends _i10.PageRouteInfo<IllnessMaterialRouteArgs> {
   IllnessMaterialRoute({
     _i11.Key? key,
-    required String illnessName,
-    required String materialTitle,
-    String? youtubeUrl,
-    String? imageUrl,
-    required String content,
+    required String materialId,
     List<_i10.PageRouteInfo>? children,
   }) : super(
          IllnessMaterialRoute.name,
-         args: IllnessMaterialRouteArgs(
-           key: key,
-           illnessName: illnessName,
-           materialTitle: materialTitle,
-           youtubeUrl: youtubeUrl,
-           imageUrl: imageUrl,
-           content: content,
-         ),
+         args: IllnessMaterialRouteArgs(key: key, materialId: materialId),
          initialChildren: children,
        );
 
@@ -141,63 +130,33 @@ class IllnessMaterialRoute
       final args = data.argsAs<IllnessMaterialRouteArgs>();
       return _i4.IllnessMaterialPage(
         key: args.key,
-        illnessName: args.illnessName,
-        materialTitle: args.materialTitle,
-        youtubeUrl: args.youtubeUrl,
-        imageUrl: args.imageUrl,
-        content: args.content,
+        materialId: args.materialId,
       );
     },
   );
 }
 
 class IllnessMaterialRouteArgs {
-  const IllnessMaterialRouteArgs({
-    this.key,
-    required this.illnessName,
-    required this.materialTitle,
-    this.youtubeUrl,
-    this.imageUrl,
-    required this.content,
-  });
+  const IllnessMaterialRouteArgs({this.key, required this.materialId});
 
   final _i11.Key? key;
 
-  final String illnessName;
-
-  final String materialTitle;
-
-  final String? youtubeUrl;
-
-  final String? imageUrl;
-
-  final String content;
+  final String materialId;
 
   @override
   String toString() {
-    return 'IllnessMaterialRouteArgs{key: $key, illnessName: $illnessName, materialTitle: $materialTitle, youtubeUrl: $youtubeUrl, imageUrl: $imageUrl, content: $content}';
+    return 'IllnessMaterialRouteArgs{key: $key, materialId: $materialId}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! IllnessMaterialRouteArgs) return false;
-    return key == other.key &&
-        illnessName == other.illnessName &&
-        materialTitle == other.materialTitle &&
-        youtubeUrl == other.youtubeUrl &&
-        imageUrl == other.imageUrl &&
-        content == other.content;
+    return key == other.key && materialId == other.materialId;
   }
 
   @override
-  int get hashCode =>
-      key.hashCode ^
-      illnessName.hashCode ^
-      materialTitle.hashCode ^
-      youtubeUrl.hashCode ^
-      imageUrl.hashCode ^
-      content.hashCode;
+  int get hashCode => key.hashCode ^ materialId.hashCode;
 }
 
 /// generated route for

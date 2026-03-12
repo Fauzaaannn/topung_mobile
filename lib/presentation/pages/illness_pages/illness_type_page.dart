@@ -120,13 +120,7 @@ class _IllnessTypeViewState extends State<_IllnessTypeView> {
                       : IllnessTypeCardStatus.none,
                   onTap: () {
                     context.router.push(
-                      IllnessMaterialRoute(
-                        illnessName: item.title,
-                        materialTitle: item.title,
-                        youtubeUrl: item.videoUrl,
-                        imageUrl: item.imageUrl,
-                        content: item.textContent,
-                      ),
+                      IllnessMaterialRoute(materialId: item.id),
                     );
                   },
                 );

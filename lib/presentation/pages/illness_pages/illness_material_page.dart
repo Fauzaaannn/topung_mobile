@@ -1,32 +1,117 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
+import 'package:topung_mobile/core/modules/app_module.dart';
+import 'package:topung_mobile/data/model/illness_model/illness_material_model.dart';
+import 'package:topung_mobile/domain/usecases/illness_material_usecases/illness_get_material_usecase.dart';
+import 'package:topung_mobile/presentation/bloc/illness_material_bloc.dart/illness_material_bloc.dart';
 import 'package:topung_mobile/presentation/widgets/drawer/comment_bottom_sheet.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 @RoutePage()
-class IllnessMaterialPage extends StatefulWidget {
-  final String illnessName;
-  final String materialTitle;
-  final String? youtubeUrl;
-  final String? imageUrl;
-  final String content;
+class IllnessMaterialPage extends StatelessWidget {
+  const IllnessMaterialPage({super.key, required this.materialId});
 
-  const IllnessMaterialPage({
-    super.key,
-    required this.illnessName,
-    required this.materialTitle,
-    this.youtubeUrl,
-    this.imageUrl,
-    required this.content,
-  });
+  final String materialId;
 
   @override
-  State<IllnessMaterialPage> createState() => _IllnessMaterialPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => IllnessMaterialBloc(
+        illnessGetMaterialUsecase: serviceLocator<IllnessGetMaterialUsecase>(),
+      )..add(IllnessMaterialFetched(materialId: materialId)),
+      child: const _IllnessMaterialView(),
+    );
+  }
 }
 
-class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
+class _IllnessMaterialView extends StatelessWidget {
+  const _IllnessMaterialView();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<IllnessMaterialBloc, IllnessMaterialState>(
+      builder: (context, state) {
+        if (state is IllnessMaterialLoading ||
+            state is IllnessMaterialInitial) {
+          return Scaffold(
+            backgroundColor: ColorConstant.white,
+            appBar: AppBar(
+              backgroundColor: ColorConstant.primary,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: ColorConstant.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (state is IllnessMaterialFailure) {
+          return Scaffold(
+            backgroundColor: ColorConstant.white,
+            appBar: AppBar(
+              backgroundColor: ColorConstant.primary,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: ColorConstant.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    state.message,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: ColorConstant.black,
+                      fontFamily: FontConstant.robotoFontFamily,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.read<IllnessMaterialBloc>().add(
+                      IllnessMaterialFetched(
+                        materialId:
+                            context.read<IllnessMaterialBloc>().state
+                                is IllnessMaterialFailure
+                            ? (context.read<IllnessMaterialBloc>().state
+                                      as IllnessMaterialFailure)
+                                  .message
+                            : '',
+                      ),
+                    ),
+                    child: const Text('Coba Lagi'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final data = (state as IllnessMaterialSuccess).data;
+        return _IllnessMaterialContent(data: data);
+      },
+    );
+  }
+}
+
+class _IllnessMaterialContent extends StatefulWidget {
+  const _IllnessMaterialContent({required this.data});
+
+  final IllnessMaterialModel data;
+
+  @override
+  State<_IllnessMaterialContent> createState() =>
+      _IllnessMaterialContentState();
+}
+
+class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
   YoutubePlayerController? _youtubeController;
   bool _isLiked = false;
   bool _isDisliked = false;
@@ -34,7 +119,7 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
   @override
   void initState() {
     super.initState();
-    final videoId = YoutubePlayer.convertUrlToId(widget.youtubeUrl ?? '');
+    final videoId = YoutubePlayer.convertUrlToId(widget.data.videoUrl);
     if (videoId != null) {
       _youtubeController = YoutubePlayerController(
         initialVideoId: videoId,
@@ -102,10 +187,10 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back, color: ColorConstant.white),
-                onPressed: () => context.router.pop(),
+                onPressed: () => Navigator.of(context).pop(),
               ),
               title: Text(
-                widget.illnessName,
+                widget.data.title,
                 style: TextStyle(
                   fontSize: FontConstant.fontSize18,
                   fontWeight: FontConstant.bold,
@@ -116,7 +201,7 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
             ),
             body: Column(
               children: [
-                player, // fixed di atas, tidak ikut scroll
+                player,
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(16),
@@ -125,7 +210,7 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
                       children: [
                         _buildTitleRow(),
                         Divider(color: ColorConstant.greyLight, height: 32),
-                        if (widget.imageUrl != null) ...[
+                        if (widget.data.imageUrl.isNotEmpty) ...[
                           _buildImage(),
                           const SizedBox(height: 16),
                         ],
@@ -142,7 +227,6 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
       );
     }
 
-    // Fallback tanpa video — placeholder fixed, konten scrollable
     return Scaffold(
       backgroundColor: ColorConstant.white,
       appBar: AppBar(
@@ -150,10 +234,10 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: ColorConstant.white),
-          onPressed: () => context.router.pop(),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          widget.illnessName,
+          widget.data.title,
           style: TextStyle(
             fontSize: FontConstant.fontSize18,
             fontWeight: FontConstant.bold,
@@ -164,7 +248,7 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
       ),
       body: Column(
         children: [
-          _buildVideoSection(), // placeholder fixed di atas
+          _buildVideoSection(),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -173,7 +257,7 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
                 children: [
                   _buildTitleRow(),
                   Divider(color: ColorConstant.greyLight, height: 32),
-                  if (widget.imageUrl != null) ...[
+                  if (widget.data.imageUrl.isNotEmpty) ...[
                     _buildImage(),
                     const SizedBox(height: 16),
                   ],
@@ -189,7 +273,6 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
   }
 
   Widget _buildVideoSection() {
-    // Hanya ditampilkan jika tidak ada youtubeController (placeholder)
     return Container(
       height: 220,
       color: ColorConstant.greyLight,
@@ -231,7 +314,7 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
       children: [
         Expanded(
           child: Text(
-            widget.materialTitle,
+            widget.data.title,
             style: TextStyle(
               fontSize: FontConstant.fontSize18,
               fontWeight: FontConstant.bold,
@@ -292,7 +375,7 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
       ),
       clipBehavior: Clip.hardEdge,
       child: Image.network(
-        widget.imageUrl!,
+        widget.data.imageUrl,
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => Container(
           height: 200,
@@ -311,7 +394,7 @@ class _IllnessMaterialPageState extends State<IllnessMaterialPage> {
 
   Widget _buildContent() {
     return Text(
-      widget.content,
+      widget.data.textContent,
       style: TextStyle(
         fontSize: FontConstant.fontSize14,
         fontWeight: FontConstant.regular,
