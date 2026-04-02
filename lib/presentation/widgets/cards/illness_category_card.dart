@@ -55,7 +55,7 @@ class IllnessCategoryCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     description,
-                    maxLines: 2,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: FontConstant.fontSize14,

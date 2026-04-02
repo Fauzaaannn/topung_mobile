@@ -104,7 +104,15 @@ class _IllnessTypeViewState extends State<_IllnessTypeView> {
           }
 
           if (state is IllnessTypeSuccess) {
-            final items = state.data.items;
+            final items = List.of(state.data.items)
+              ..sort((a, b) {
+                final idA = int.tryParse(a.id);
+                final idB = int.tryParse(b.id);
+                if (idA != null && idB != null) {
+                  return idA.compareTo(idB);
+                }
+                return a.id.compareTo(b.id);
+              });
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: items.length,

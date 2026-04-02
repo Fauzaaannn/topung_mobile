@@ -9,6 +9,7 @@ import 'package:topung_mobile/domain/usecases/illness_material_usecases/illness_
 import 'package:topung_mobile/presentation/bloc/illness_material_bloc.dart/illness_material_bloc.dart';
 import 'package:topung_mobile/presentation/widgets/drawer/comment_bottom_sheet.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 @RoutePage()
 class IllnessMaterialPage extends StatelessWidget {
@@ -393,16 +394,28 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
   }
 
   Widget _buildContent() {
-    return Text(
-      widget.data.textContent,
-      style: TextStyle(
-        fontSize: FontConstant.fontSize14,
-        fontWeight: FontConstant.regular,
-        color: ColorConstant.greyDark,
-        fontFamily: FontConstant.robotoFontFamily,
-        height: 1.6,
+    return MarkdownBody(
+      data: widget.data.textContent,
+      styleSheet: MarkdownStyleSheet(
+        p: TextStyle(
+          fontSize: FontConstant.fontSize14,
+          fontWeight: FontConstant.regular,
+          color: ColorConstant.greyDark,
+          fontFamily: FontConstant.robotoFontFamily,
+          height: 1.6,
+        ),
+        strong: TextStyle(
+          fontSize: FontConstant.fontSize14,
+          fontWeight: FontConstant.bold,
+          color: ColorConstant.greyDark,
+          fontFamily: FontConstant.robotoFontFamily,
+          height: 1.6,
+        ),
+        listBullet: TextStyle(
+          fontSize: FontConstant.fontSize14,
+          color: ColorConstant.greyDark,
+        ),
       ),
-      textAlign: TextAlign.justify,
     );
   }
 }

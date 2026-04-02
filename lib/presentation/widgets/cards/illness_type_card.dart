@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 enum IllnessTypeCardStatus { none, bookmarked, completed }
 
@@ -11,8 +12,8 @@ class IllnessTypeCard extends StatelessWidget {
   final IllnessTypeCardStatus status;
   final VoidCallback? onTap;
   final VoidCallback? onStatusTap;
-  final double imageWidth; 
-  final double imageHeight; 
+  final double imageWidth;
+  final double imageHeight;
 
   const IllnessTypeCard({
     super.key,
@@ -22,8 +23,8 @@ class IllnessTypeCard extends StatelessWidget {
     this.status = IllnessTypeCardStatus.none,
     this.onTap,
     this.onStatusTap,
-    this.imageWidth = 80, 
-    this.imageHeight = 80, 
+    this.imageWidth = 80,
+    this.imageHeight = 80,
   });
   @override
   Widget build(BuildContext context) {
@@ -74,16 +75,47 @@ class IllnessTypeCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    description,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: FontConstant.fontSize12,
-                      fontWeight: FontConstant.regular,
-                      color: ColorConstant.greyDark,
-                      fontFamily: FontConstant.robotoFontFamily,
-                      height: 1.5,
+                  SizedBox(
+                    height: 54, // Maksimal 3 baris (12 * 1.5 * 3)
+                    child: ShaderMask(
+                      shaderCallback: (Rect bounds) {
+                        return LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.white, Colors.white.withOpacity(0.0)],
+                          stops: const [0.7, 1.0],
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: SingleChildScrollView(
+                        physics: const NeverScrollableScrollPhysics(),
+                        child: MarkdownBody(
+                          data: description,
+                          styleSheet: MarkdownStyleSheet(
+                            p: TextStyle(
+                              fontSize: FontConstant.fontSize12,
+                              fontWeight: FontConstant.regular,
+                              color: ColorConstant.greyDark,
+                              fontFamily: FontConstant.robotoFontFamily,
+                              height: 1.5,
+                            ),
+                            pPadding: EdgeInsets.zero,
+                            listIndent: 12,
+                            listBulletPadding: const EdgeInsets.only(right: 4),
+                            strong: TextStyle(
+                              fontSize: FontConstant.fontSize12,
+                              fontWeight: FontConstant.bold,
+                              color: ColorConstant.greyDark,
+                              fontFamily: FontConstant.robotoFontFamily,
+                              height: 1.5,
+                            ),
+                            listBullet: TextStyle(
+                              fontSize: FontConstant.fontSize12,
+                              color: ColorConstant.greyDark,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],
