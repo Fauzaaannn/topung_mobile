@@ -6,7 +6,7 @@ import 'package:topung_mobile/core/app_theme/font_constant.dart';
 import 'package:topung_mobile/core/modules/app_module.dart';
 import 'package:topung_mobile/data/model/illness_model/illness_material_model.dart';
 import 'package:topung_mobile/domain/usecases/illness_material_usecases/illness_get_material_usecase.dart';
-import 'package:topung_mobile/presentation/bloc/illness_material_bloc.dart/illness_material_bloc.dart';
+import 'package:topung_mobile/presentation/bloc/illness_material_bloc/illness_material_bloc.dart';
 import 'package:topung_mobile/presentation/widgets/drawer/comment_bottom_sheet.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
