@@ -225,7 +225,37 @@ Auth: `Bearer user/admin`
 ### `POST /chatbot/history/pagination/:conversationId`
 Auth: `Bearer user/admin`
 - Payload: format pagination standar
-- **Response**: Mengembalikan seluruh riwayat tanya-jawab di dalam sesi tersebut secara kronologis.
+- **Response**: Mengembalikan seluruh riwayat tanya-jawab di dalam sesi tersebut secara kronologis beserta referensi/sumber terkaitnya.
+Contoh Respons:
+```json
+{
+    "message": "Success",
+    "items": [
+        {
+            "id": "8",
+            "userId": "2",
+            "question": "Bagaimana cara melakukan General Treatment versi pertama?",
+            "answer": "# Cara Melakukan General Treatment...",
+            "conversationId": "51859013-dd9b-4634-a0dc-72f6df623979",
+            "sources": [
+                {
+                    "id": "5",
+                    "title": "TUTORIAL: B. General Treatment Versi Kedua",
+                    "imageUrl": "https://i.ytimg.com/vi/...",
+                    "videoUrl": "https://www.youtube.com/watch?v=FfHa_WoGlKo"
+                }
+            ],
+            "timestamp": "2026-04-19 15:15:08.449171"
+        }
+    ],
+    "pagination": {
+        "page": 1,
+        "pageSize": 20,
+        "totalItems": 1,
+        "totalPages": 1
+    }
+}
+```
 
 Berikut adalah penjelasan mekanisme chatbot Anda yang sekarang, mulai dari pembuatan chat baru hingga melanjutkan percakapan lama:
 

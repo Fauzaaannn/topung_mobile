@@ -27,7 +27,7 @@ Future<void> _initializeExternalDependencies() async {
       BaseOptions(
         baseUrl: EndpointConstant.baseUrl,
         connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 120),
         headers: {'Content-Type': 'application/json'},
       ),
     );

@@ -22,6 +22,10 @@ class ChatbotHistoryModel extends Equatable {
             'Percakapan',
         updatedAt: json['updatedAt'] != null
             ? DateTime.tryParse(json['updatedAt'] as String)
+            : json['lastActivity'] != null
+            ? DateTime.tryParse(json['lastActivity'] as String)
+            : json['createdAt'] != null
+            ? DateTime.tryParse(json['createdAt'] as String)
             : null,
       );
 
@@ -39,7 +43,12 @@ class ChatbotHistoryPaginationModel extends Equatable {
   final PaginationMetaModel pagination;
 
   factory ChatbotHistoryPaginationModel.fromJson(Map<String, dynamic> json) {
-    if (json['data'] == null) {
+    final Map<String, dynamic> data =
+        json.containsKey('data') && json['data'] != null
+        ? json['data'] as Map<String, dynamic>
+        : json;
+
+    if (data['items'] == null) {
       return const ChatbotHistoryPaginationModel(
         items: [],
         pagination: PaginationMetaModel(
@@ -50,7 +59,7 @@ class ChatbotHistoryPaginationModel extends Equatable {
         ),
       );
     }
-    final data = json['data'] as Map<String, dynamic>;
+
     final itemsList = data['items'] as List<dynamic>? ?? [];
     return ChatbotHistoryPaginationModel(
       items: itemsList
@@ -72,6 +81,7 @@ class ChatbotMessageModel extends Equatable {
     required this.conversationId,
     required this.question,
     required this.answer,
+    this.sources,
     this.createdAt,
   });
 
@@ -79,6 +89,7 @@ class ChatbotMessageModel extends Equatable {
   final String conversationId;
   final String question;
   final String answer;
+  final List<dynamic>? sources;
   final DateTime? createdAt;
 
   factory ChatbotMessageModel.fromJson(Map<String, dynamic> json) =>
@@ -87,13 +98,16 @@ class ChatbotMessageModel extends Equatable {
         conversationId: json['conversationId'] as String? ?? '',
         question: json['question'] as String? ?? '',
         answer: json['answer'] as String? ?? '',
+        sources: json['sources'] as List<dynamic>? ?? [],
         createdAt: json['createdAt'] != null
             ? DateTime.tryParse(json['createdAt'] as String)
-            : null,
+            : json['timestamp'] != null 
+                ? DateTime.tryParse(json['timestamp'] as String) 
+                : null,
       );
 
   @override
-  List<Object?> get props => [id, conversationId, question, answer, createdAt];
+  List<Object?> get props => [id, conversationId, question, answer, sources, createdAt];
 }
 
 class ChatbotMessagePaginationModel extends Equatable {
@@ -106,7 +120,12 @@ class ChatbotMessagePaginationModel extends Equatable {
   final PaginationMetaModel pagination;
 
   factory ChatbotMessagePaginationModel.fromJson(Map<String, dynamic> json) {
-    if (json['data'] == null) {
+    final Map<String, dynamic> data =
+        json.containsKey('data') && json['data'] != null
+        ? json['data'] as Map<String, dynamic>
+        : json;
+
+    if (data['items'] == null) {
       return const ChatbotMessagePaginationModel(
         items: [],
         pagination: PaginationMetaModel(
@@ -117,7 +136,7 @@ class ChatbotMessagePaginationModel extends Equatable {
         ),
       );
     }
-    final data = json['data'] as Map<String, dynamic>;
+
     final itemsList = data['items'] as List<dynamic>? ?? [];
     return ChatbotMessagePaginationModel(
       items: itemsList

@@ -1,9 +1,23 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:get_it/get_it.dart';
+import 'package:uuid/uuid.dart';
+
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
 import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
+
+import 'package:topung_mobile/domain/usecases/chatbot_usecases/chatbot_usecase.dart';
+import 'package:topung_mobile/presentation/bloc/chatbot_bloc/chatbot_bloc.dart';
+import 'package:topung_mobile/presentation/bloc/chatbot_bloc/chatbot_event.dart';
+import 'package:topung_mobile/presentation/bloc/chatbot_bloc/chatbot_state.dart';
+
+import 'package:topung_mobile/domain/usecases/chatbot_usecases/chatbot_history_usecase.dart';
+import 'package:topung_mobile/presentation/bloc/chatbot_history_bloc/chatbot_history_bloc.dart';
+import 'package:topung_mobile/presentation/bloc/chatbot_history_bloc/chatbot_history_event.dart';
+import 'package:topung_mobile/presentation/bloc/chatbot_history_bloc/chatbot_history_state.dart';
 
 enum _MessageRole { user, ai }
 
@@ -44,131 +58,58 @@ class _ChatPageState extends State<ChatPage> {
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
 
-  // Nanti akan berasal dari BLoC/repository
-  final List<_ChatMessage> _messages = [
-    const _ChatMessage(
-      text: 'Halo, ada yang bisa saya bantu?',
-      role: _MessageRole.ai,
-    ),
-    const _ChatMessage(
-      text:
-          'Bagaimana cara melakukan General Treatment totok punggung menurut Ustadz Abdurrahman?',
-      role: _MessageRole.user,
-    ),
-    const _ChatMessage(
-      role: _MessageRole.ai,
-      text: '''# Cara Melakukan General Treatment Totok Punggung
+  final Uuid _uuid = const Uuid();
 
-Berdasarkan materi dari Ustadz Abdurrahman (Channel KTPI TV), terdapat **dua versi** General Treatment yang bisa Anda praktikkan:
+  late ChatbotBloc _chatbotBloc;
+  ChatbotHistoryBloc? _historyBloc;
 
----
+  List<_ChatMessage> _messages = [];
+  String? _currentConversationId;
 
-## Versi Pertama (4 Bagian Utama)
+  @override
+  void initState() {
+    super.initState();
+    _chatbotBloc = ChatbotBloc(GetIt.instance<ChatbotUsecase>());
 
-### 1. **Ginjal ke Bawah**
-- Mulai dari area ginjal (rusuk paling bawah)
-- Gerakan horizontal ke bawah hingga pinggul
-- Lakukan di sisi kanan, tengah, dan sisi kiri
+    // Konfigurasi Conversation ID
+    if (widget.chatId != null && widget.chatId!.isNotEmpty) {
+      _currentConversationId = widget.chatId;
 
-### 2. **Bahu Belikat**
-- Fokus pada area tulang belikat
-- Gerakan horizontal sepanjang tulang belikat
-- Lakukan di sisi kanan dan kiri
-- *Baik untuk mengatasi hipertensi, migrain, vertigo, dan gangguan otak*
-
-### 3. **Tengkuk ke Bawah**
-- Mulai dari area tengkuk (bagian leher yang menonjol)
-- Gerakan horizontal ke bawah tepat di atas tulang belakang
-- Tekanan lebih lembut jika lemak tipis, lebih kuat jika ada penebalan lemak
-
-### 4. **Samping Tulang Belakang**
-- Meliputi sisi kanan dan kiri tulang belakang
-- Gerakan horizontal dari tengkuk hingga ginjal
-- Sentuhkan tekanan hingga mengenai pinggiran tulang belakang
-
----
-
-## Versi Kedua (3 Hitungan Utama) - Lebih Sederhana
-
-### Hitungan Pertama: Sepanjang Tulang Belakang
-- Dimulai dari samping tulang belakang kanan → tengah → samping kiri
-- Dilakukan dari tengkuk hingga pinggul
-
-### Hitungan Kedua: Area Pinggul
-- Sentuhan horizontal di sepanjang tulang pinggul
-- Lakukan hingga batas area yang nyaman
-
-### Hitungan Ketiga: Area Bahu Belikat
-- Sentuh bahu belikat kanan, lalu kiri
-- Pastikan menyentuh seluruh tulang belikat
-
----
-
-## Prinsip Dasar Penting
-
-| Aspek | Panduan |
-|-------|---------|
-| **Tekanan** | Sesuaikan kenyamanan pasien; tidak terlalu keras atau lemah |
-| **Arah Gerakan** | Horizontal adalah yang paling efektif |
-| **Sentuhan Tulang** | Arahkan tekanan hingga menyentuh tulang belakang/belikat |
-| **Minyak** | Gunakan sedikit di ujung jari, tidak perlu banyak |
-| **Durasi** | ±10-15 menit per putaran (minimal 2-3 putaran untuk hasil maksimal) |
-
----
-
-## Catatan
-- Teknik ini aman untuk siapa saja (termasuk anak-anak)
-- Dapat dilakukan setelah makan atau sebelum tidur
-- Tidak ada kontraindikasi khusus
-- Bisa dikombinasikan dengan versi pertama untuk hasil lebih optimal
-
-Apakah ada bagian tertentu yang ingin Anda tanyakan lebih lanjut? 😊''',
-      sources: [
-        _ChatSource(
-          id: '5',
-          title:
-              'TUTORIAL: B. General Treatment Versi Kedua - Totok Punggung - Channel KTPI TV - Ust. Abdurrahman',
-          videoUrl: 'https://www.youtube.com/watch?v=FfHa_WoGlKo',
-          imageUrl:
-              'https://i.ytimg.com/vi/FfHa_WoGlKo/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAff2QyOOozqUkhQoBzKlcGZ5M33g',
+      // Jika membuka percakapan lama, load history
+      _historyBloc = ChatbotHistoryBloc(
+        GetIt.instance<ChatbotHistoryUsecase>(),
+      );
+      _historyBloc!.add(
+        GetChatbotHistoryByIdPaginationEvent(
+          conversationId: _currentConversationId!,
+          pageSize: 50, // Load cukup banyak pesan ke belakang
         ),
-        _ChatSource(
-          id: '4',
-          title:
-              'TUTORIAL: A. General Treatment Versi Pertama - Totok Punggung - Channel KTPI TV - Ust Abdurrahman',
-          videoUrl: 'https://www.youtube.com/watch?v=uTIi2gmMBS8',
-          imageUrl:
-              'https://i.ytimg.com/vi/uTIi2gmMBS8/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLCvYWmAB_1Lqd7i_IgMrYG17xaNPA',
+      );
+    } else {
+      // Jika chat baru, _currentConversationId akan didefinisikan dengan UUID v4
+      _currentConversationId = _uuid.v4();
+
+      // Berikan ucapan selamat datang / greeting lokal
+      _messages.add(
+        const _ChatMessage(
+          text: 'Halo, ada yang bisa saya bantu?',
+          role: _MessageRole.ai,
         ),
-        _ChatSource(
-          id: '6',
-          title:
-              'TUTORIAL: C. Finishing & fokosing untuk deteksi penyakit - Totok Punggung  Bersama Ust Abdurrahman',
-          videoUrl: 'https://www.youtube.com/watch?v=V4yo_ZSAwJA',
-          imageUrl:
-              'https://i.ytimg.com/vi/V4yo_ZSAwJA/hqdefault.jpg?sqp=-oaymwEcCNACELwBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLBftrLrh2FQZRFAgEjjM2ws0KqJXg',
-        ),
-      ],
-    ),
-  ];
+      );
+    }
+  }
 
   @override
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
+    _chatbotBloc.close();
+    _historyBloc?.close();
     super.dispose();
   }
 
-  void _sendMessage() {
-    final text = _messageController.text.trim();
-    if (text.isEmpty) return;
-
-    setState(() {
-      _messages.add(_ChatMessage(text: text, role: _MessageRole.user));
-      _messageController.clear();
-    });
-
+  void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -180,46 +121,193 @@ Apakah ada bagian tertentu yang ingin Anda tanyakan lebih lanjut? 😊''',
     });
   }
 
+  void _sendMessage() {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+
+    if (_chatbotBloc.state is ChatbotLoading) return;
+
+    setState(() {
+      _messages.add(_ChatMessage(text: text, role: _MessageRole.user));
+    });
+
+    _messageController.clear();
+    _scrollToBottom();
+
+    // Mengirim ke API menggunakan _currentConversationId
+    _chatbotBloc.add(
+      AskChatbotEvent(question: text, conversationId: _currentConversationId),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ColorConstant.white,
-      appBar: AppBar(
-        backgroundColor: ColorConstant.primary,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: ColorConstant.black),
-          onPressed: () => context.router.pop(),
-        ),
-        title: Text(
-          'AI Assistant',
-          style: TextStyle(
-            fontSize: FontConstant.fontSize18,
-            fontWeight: FontConstant.bold,
-            color: ColorConstant.black,
-            fontFamily: FontConstant.robotoFontFamily,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _chatbotBloc),
+        if (_historyBloc != null) BlocProvider.value(value: _historyBloc!),
+      ],
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<ChatbotBloc, ChatbotState>(
+            listener: (context, state) {
+              if (state is ChatbotSuccess) {
+                setState(() {
+                  final mappedSources = state.response.sources.map((e) {
+                    final mapData = e as Map<String, dynamic>;
+                    return _ChatSource(
+                      id: mapData['id']?.toString() ?? '',
+                      title: mapData['title']?.toString() ?? 'Materi Rujukan',
+                      videoUrl: mapData['videoUrl']?.toString() ?? '',
+                      imageUrl: mapData['imageUrl']?.toString() ?? '',
+                    );
+                  }).toList();
+
+                  _messages.add(
+                    _ChatMessage(
+                      text: state.response.answer,
+                      role: _MessageRole.ai,
+                      sources: mappedSources,
+                    ),
+                  );
+                });
+                _scrollToBottom();
+              } else if (state is ChatbotError) {
+                setState(() {
+                  _messages.add(
+                    _ChatMessage(
+                      text: 'Maaf, terjadi kesalahan: ${state.message}',
+                      role: _MessageRole.ai,
+                    ),
+                  );
+                });
+                _scrollToBottom();
+              }
+            },
           ),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                return _buildBubble(_messages[index]);
+          if (_historyBloc != null)
+            BlocListener<ChatbotHistoryBloc, ChatbotHistoryState>(
+              listener: (context, state) {
+                if (state is ChatbotMessageLoaded) {
+                  setState(() {
+                    _messages.clear();
+                    // Load berurutan kronologis dari list state.messages
+                    for (var msg in state.messages) {
+                      _messages.add(
+                        _ChatMessage(
+                          text: msg.question,
+                          role: _MessageRole.user,
+                        ),
+                      );
+                      _messages.add(
+                        _ChatMessage(
+                          text: msg.answer,
+                          role: _MessageRole.ai,
+                          sources:
+                              msg.sources?.map((e) {
+                                final mapData = e as Map<String, dynamic>;
+                                return _ChatSource(
+                                  id: mapData['id']?.toString() ?? '',
+                                  title:
+                                      mapData['title']?.toString() ??
+                                      'Materi Rujukan',
+                                  videoUrl:
+                                      mapData['videoUrl']?.toString() ?? '',
+                                  imageUrl:
+                                      mapData['imageUrl']?.toString() ?? '',
+                                );
+                              }).toList() ??
+                              [],
+                        ),
+                      );
+                    }
+                  });
+                  _scrollToBottom();
+                }
               },
             ),
-          ),
-          _buildInputBar(),
         ],
+        child: Scaffold(
+          backgroundColor: ColorConstant.white,
+          appBar: _buildAppBar(),
+          body: _historyBloc != null
+              ? BlocBuilder<ChatbotHistoryBloc, ChatbotHistoryState>(
+                  builder: (context, state) {
+                    if (state is ChatbotMessageLoading) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: ColorConstant.primary,
+                        ),
+                      );
+                    } else if (state is ChatbotMessageError) {
+                      return Center(
+                        child: Text(
+                          state.message,
+                          style: TextStyle(
+                            fontFamily: FontConstant.robotoFontFamily,
+                            color: ColorConstant.greyDark,
+                          ),
+                        ),
+                      );
+                    }
+                    return _buildChatView();
+                  },
+                )
+              : _buildChatView(),
+        ),
       ),
     );
   }
 
-  Widget _buildBubble(_ChatMessage message) {
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: ColorConstant.primary,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: ColorConstant.white),
+        onPressed: () => context.router.pop(),
+      ),
+      title: Text(
+        'AI Assistant',
+        style: TextStyle(
+          fontSize: FontConstant.fontSize18,
+          fontWeight: FontConstant.bold,
+          color: ColorConstant.white,
+          fontFamily: FontConstant.robotoFontFamily,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatView() {
+    return BlocBuilder<ChatbotBloc, ChatbotState>(
+      builder: (context, chatbotState) {
+        final isLoading = chatbotState is ChatbotLoading;
+        return SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    return _buildBubble(_messages[index], index, isLoading);
+                  },
+                ),
+              ),
+              _buildInputBar(isLoading),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBubble(_ChatMessage message, int index, bool isLoading) {
     final isUser = message.role == _MessageRole.user;
 
     return Align(
@@ -277,6 +365,21 @@ Apakah ada bagian tertentu yang ingin Anda tanyakan lebih lanjut? 😊''',
                   ),
                 ),
               ),
+
+            // Render Widget Indicator Loading saat posisi sedang menunggu jawaban BLoC
+            if (!isUser && index == _messages.length - 1 && isLoading)
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(
+                    color: ColorConstant.primary,
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+
             if (message.sources != null && message.sources!.isNotEmpty) ...[
               const SizedBox(height: 12),
               Divider(
@@ -363,15 +466,10 @@ Apakah ada bagian tertentu yang ingin Anda tanyakan lebih lanjut? 😊''',
     );
   }
 
-  Widget _buildInputBar() {
+  Widget _buildInputBar(bool isLoading) {
     return Container(
       color: ColorConstant.white,
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 10,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 12,
-      ),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 12),
       child: Row(
         children: [
           Expanded(
@@ -380,13 +478,16 @@ Apakah ada bagian tertentu yang ingin Anda tanyakan lebih lanjut? 😊''',
               focusNode: _focusNode,
               textInputAction: TextInputAction.send,
               onSubmitted: (_) => _sendMessage(),
+              enabled: !isLoading,
               style: TextStyle(
                 fontSize: FontConstant.fontSize14,
                 fontFamily: FontConstant.robotoFontFamily,
                 color: ColorConstant.black,
               ),
               decoration: InputDecoration(
-                hintText: 'Ketik Pesan...',
+                hintText: isLoading
+                    ? 'AI sedang mengetik...'
+                    : 'Ketik Pesan...',
                 hintStyle: TextStyle(
                   fontSize: FontConstant.fontSize14,
                   color: ColorConstant.grey,
@@ -407,17 +508,19 @@ Apakah ada bagian tertentu yang ingin Anda tanyakan lebih lanjut? 😊''',
           ),
           const SizedBox(width: 10),
           GestureDetector(
-            onTap: _sendMessage,
+            onTap: isLoading ? null : _sendMessage,
             child: Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
-                color: ColorConstant.primary,
+              decoration: BoxDecoration(
+                color: isLoading
+                    ? ColorConstant.greyLight
+                    : ColorConstant.primary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.send_rounded,
-                color: ColorConstant.white,
+                color: isLoading ? ColorConstant.grey : ColorConstant.white,
                 size: 20,
               ),
             ),
