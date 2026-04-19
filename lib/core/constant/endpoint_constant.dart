@@ -27,6 +27,7 @@ class EndpointConstant {
   // Chatbot
   static const String chatbotAsk = '/chatbot/ask';
   static const String chatbotHistoryPagination = '/chatbot/history/pagination';
+  static String chatbotHistoryByIdPagination(String id) => '/chatbot/history/pagination/$id';
 
   // Admin - Categories
   static const String adminCreateCategory = '/admin/categories';

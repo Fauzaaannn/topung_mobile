@@ -8,6 +8,10 @@ import 'package:topung_mobile/data/provider/remote/interface/i_auth_remote_provi
 import 'package:topung_mobile/data/provider/remote/interface/i_illness_category_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/interface/i_illness_material_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/interface/i_illness_type_remote_provider.dart';
+import 'package:topung_mobile/data/provider/remote/implementation/chatbot_history_remote_provider.dart';
+import 'package:topung_mobile/data/provider/remote/interface/i_chatbot_history_remote_provider.dart';
+import 'package:topung_mobile/data/provider/remote/implementation/chatbot_remote_provider.dart';
+import 'package:topung_mobile/data/provider/remote/interface/i_chatbot_remote_provider.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -26,5 +30,13 @@ void initializeProviderModule() {
 
   serviceLocator.registerLazySingleton<IIllnessMaterialRemoteProvider>(
     () => IllnessMaterialRemoteProvider(serviceLocator<Dio>()),
+  );
+
+  serviceLocator.registerLazySingleton<IChatbotHistoryRemoteProvider>(
+    () => ChatbotHistoryRemoteProvider(serviceLocator<Dio>()),
+  );
+
+  serviceLocator.registerLazySingleton<IChatbotRemoteProvider>(
+    () => ChatbotRemoteProvider(serviceLocator<Dio>()),
   );
 }
