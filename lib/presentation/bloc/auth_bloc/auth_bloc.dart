@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:topung_mobile/core/services/i_secure_storage_services.dart';
 import 'package:topung_mobile/domain/usecases/auth_usecases/login_usecase.dart';
 
@@ -9,8 +10,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({
     required LoginUsecase loginUsecase,
     required ISecureStorageService secureStorageService,
+    required SharedPreferences sharedPreferences,
   }) : _loginUsecase = loginUsecase,
        _secureStorageService = secureStorageService,
+       _sharedPreferences = sharedPreferences,
        super(AuthInitial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<LogoutRequested>(_onLogoutRequested);
@@ -18,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   final LoginUsecase _loginUsecase;
   final ISecureStorageService _secureStorageService;
+  final SharedPreferences _sharedPreferences;
 
   Future<void> _onLoginSubmitted(
     LoginSubmitted event,
@@ -46,6 +50,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     await _secureStorageService.deleteAll();
+    await _sharedPreferences.clear();
     emit(LogoutSuccess());
   }
 }

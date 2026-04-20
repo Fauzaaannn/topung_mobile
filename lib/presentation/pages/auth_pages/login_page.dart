@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
 import 'package:topung_mobile/core/modules/app_module.dart';
@@ -21,6 +22,7 @@ class LoginPage extends StatelessWidget {
       create: (_) => AuthBloc(
         loginUsecase: serviceLocator<LoginUsecase>(),
         secureStorageService: serviceLocator<ISecureStorageService>(),
+        sharedPreferences: serviceLocator<SharedPreferences>(),
       ),
       child: const _LoginView(),
     );
@@ -67,7 +69,7 @@ class _LoginViewState extends State<_LoginView> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is LoginSuccess) {
-          context.router.replaceAll([const NavbarRoute()]);
+          context.router.replaceAll([SplashRoute(fromLogin: true)]);
         } else if (state is AuthFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message), backgroundColor: Colors.red),
