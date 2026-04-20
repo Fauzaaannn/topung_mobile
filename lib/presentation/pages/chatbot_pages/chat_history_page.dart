@@ -77,6 +77,7 @@ class _ChatHistoryPageState extends State<ChatHistoryPage> {
               fontFamily: FontConstant.robotoFontFamily,
             ),
           ),
+          centerTitle: true,
         ),
         body: BlocBuilder<ChatbotHistoryBloc, ChatbotHistoryState>(
           builder: (context, state) {

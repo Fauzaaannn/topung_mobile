@@ -71,28 +71,22 @@ class _ChatPageState extends State<ChatPage> {
     super.initState();
     _chatbotBloc = ChatbotBloc(GetIt.instance<ChatbotUsecase>());
 
-    // Konfigurasi Conversation ID
     if (widget.chatId != null && widget.chatId!.isNotEmpty) {
       _currentConversationId = widget.chatId;
-
-      // Jika membuka percakapan lama, load history
       _historyBloc = ChatbotHistoryBloc(
         GetIt.instance<ChatbotHistoryUsecase>(),
       );
       _historyBloc!.add(
         GetChatbotHistoryByIdPaginationEvent(
           conversationId: _currentConversationId!,
-          pageSize: 50, // Load cukup banyak pesan ke belakang
+          pageSize: 50,
         ),
       );
     } else {
-      // Jika chat baru, _currentConversationId akan didefinisikan dengan UUID v4
       _currentConversationId = _uuid.v4();
-
-      // Berikan ucapan selamat datang / greeting lokal
       _messages.add(
         const _ChatMessage(
-          text: 'Halo, ada yang bisa saya bantu?',
+          text: 'Halo, ada yang bisa saya bantu hari ini?',
           role: _MessageRole.ai,
         ),
       );
@@ -114,8 +108,8 @@ class _ChatPageState extends State<ChatPage> {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOutCirc,
         );
       }
     });
@@ -124,7 +118,6 @@ class _ChatPageState extends State<ChatPage> {
   void _sendMessage() {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
-
     if (_chatbotBloc.state is ChatbotLoading) return;
 
     setState(() {
@@ -134,7 +127,6 @@ class _ChatPageState extends State<ChatPage> {
     _messageController.clear();
     _scrollToBottom();
 
-    // Mengirim ke API menggunakan _currentConversationId
     _chatbotBloc.add(
       AskChatbotEvent(question: text, conversationId: _currentConversationId),
     );
@@ -191,7 +183,6 @@ class _ChatPageState extends State<ChatPage> {
                 if (state is ChatbotMessageLoaded) {
                   setState(() {
                     _messages.clear();
-                    // Load berurutan kronologis dari list state.messages
                     for (var msg in state.messages) {
                       _messages.add(
                         _ChatMessage(
@@ -228,52 +219,108 @@ class _ChatPageState extends State<ChatPage> {
             ),
         ],
         child: Scaffold(
-          backgroundColor: ColorConstant.white,
+          backgroundColor: const Color(0xFFF8FAFB),
           appBar: _buildAppBar(),
-          body: _historyBloc != null
-              ? BlocBuilder<ChatbotHistoryBloc, ChatbotHistoryState>(
-                  builder: (context, state) {
-                    if (state is ChatbotMessageLoading) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: ColorConstant.primary,
-                        ),
-                      );
-                    } else if (state is ChatbotMessageError) {
-                      return Center(
-                        child: Text(
-                          state.message,
-                          style: TextStyle(
-                            fontFamily: FontConstant.robotoFontFamily,
-                            color: ColorConstant.greyDark,
-                          ),
-                        ),
-                      );
-                    }
-                    return _buildChatView();
-                  },
-                )
-              : _buildChatView(),
+          body: Stack(
+            children: [
+              _historyBloc != null
+                  ? BlocBuilder<ChatbotHistoryBloc, ChatbotHistoryState>(
+                      builder: (context, state) {
+                        if (state is ChatbotMessageLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: ColorConstant.primary,
+                            ),
+                          );
+                        }
+                        return _buildChatView();
+                      },
+                    )
+                  : _buildChatView(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  AppBar _buildAppBar() {
+  PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: ColorConstant.primary,
+      scrolledUnderElevation: 0,
+      backgroundColor: ColorConstant.white,
       elevation: 0,
+      centerTitle: false,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: ColorConstant.white),
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: ColorConstant.black,
+          size: 20,
+        ),
         onPressed: () => context.router.pop(),
       ),
-      title: Text(
-        'AI Assistant',
-        style: TextStyle(
-          fontSize: FontConstant.fontSize18,
-          fontWeight: FontConstant.bold,
-          color: ColorConstant.white,
-          fontFamily: FontConstant.robotoFontFamily,
+      title: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: ColorConstant.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.psychology_outlined,
+              color: ColorConstant.primary,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Topung AI',
+                style: TextStyle(
+                  fontSize: FontConstant.fontSize16,
+                  fontWeight: FontConstant.bold,
+                  color: ColorConstant.black,
+                  fontFamily: FontConstant.robotoFontFamily,
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Online',
+                    style: TextStyle(
+                      fontSize: FontConstant.fontSize12,
+                      color: ColorConstant.greyDark,
+                      fontFamily: FontConstant.robotoFontFamily,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.more_vert_rounded, color: ColorConstant.black),
+          onPressed: () {},
+        ),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          color: ColorConstant.greyLight.withOpacity(0.5),
+          height: 1,
         ),
       ),
     );
@@ -283,27 +330,92 @@ class _ChatPageState extends State<ChatPage> {
     return BlocBuilder<ChatbotBloc, ChatbotState>(
       builder: (context, chatbotState) {
         final isLoading = chatbotState is ChatbotLoading;
-        return SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  itemCount: _messages.length,
-                  itemBuilder: (context, index) {
-                    return _buildBubble(_messages[index], index, isLoading);
-                  },
-                ),
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                itemCount: _messages.length + (isLoading ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == _messages.length) {
+                    return _buildThinkingBubble();
+                  }
+                  return _buildAnimatedBubble(
+                    _messages[index],
+                    index,
+                    isLoading,
+                  );
+                },
               ),
-              _buildInputBar(isLoading),
-            ],
+            ),
+            _buildFloatingInputBar(isLoading),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildThinkingBubble() {
+    return _buildAnimatedBubble(
+      const _ChatMessage(text: "", role: _MessageRole.ai),
+      999, // Unique key for thinking bubble
+      true,
+    );
+  }
+
+  Widget _buildAnimatedBubble(_ChatMessage message, int index, bool isLoading) {
+    bool isThinking = index == 999;
+    return TweenAnimationBuilder<double>(
+      key: ValueKey(isThinking ? 'thinking' : 'msg_$index'),
+      tween: Tween<double>(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeOutQuart,
+      builder: (context, value, child) {
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 20 * (1 - value)),
+            child: child,
           ),
         );
       },
+      child: isThinking
+          ? _buildThinkingContent()
+          : _buildBubble(message, index, isLoading),
+    );
+  }
+
+  Widget _buildThinkingContent() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: ColorConstant.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+              bottomLeft: Radius.circular(4),
+              bottomRight: Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(
+              color: ColorConstant.greyLight.withOpacity(0.5),
+              width: 1,
+            ),
+          ),
+          child: _buildTypingIndicator(),
+        ),
+      ),
     );
   }
 
@@ -312,92 +424,79 @@ class _ChatPageState extends State<ChatPage> {
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * (isUser ? 0.7 : 0.85),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: isUser ? ColorConstant.primaryLight : ColorConstant.greyLight,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isUser ? 16 : 4),
-            bottomRight: Radius.circular(isUser ? 4 : 16),
-          ),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: isUser
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
-            if (isUser)
-              Text(
-                message.text,
-                style: TextStyle(
-                  fontSize: FontConstant.fontSize14,
-                  fontWeight: FontConstant.regular,
-                  color: ColorConstant.black,
-                  fontFamily: FontConstant.robotoFontFamily,
-                  height: 1.4,
-                ),
-              )
-            else
-              MarkdownBody(
-                data: message.text,
-                styleSheet: MarkdownStyleSheet(
-                  p: TextStyle(
-                    fontSize: FontConstant.fontSize14,
-                    fontWeight: FontConstant.regular,
-                    color: ColorConstant.black,
-                    fontFamily: FontConstant.robotoFontFamily,
-                    height: 1.4,
-                  ),
-                  strong: TextStyle(
-                    fontSize: FontConstant.fontSize14,
-                    fontWeight: FontConstant.bold,
-                    color: ColorConstant.black,
-                    fontFamily: FontConstant.robotoFontFamily,
-                    height: 1.4,
-                  ),
-                  listBullet: TextStyle(
-                    fontSize: FontConstant.fontSize14,
-                    color: ColorConstant.black,
-                  ),
-                ),
+            Container(
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width * 0.8,
               ),
-
-            // Render Widget Indicator Loading saat posisi sedang menunggu jawaban BLoC
-            if (!isUser && index == _messages.length - 1 && isLoading)
-              const Padding(
-                padding: EdgeInsets.only(top: 8.0),
-                child: SizedBox(
-                  height: 16,
-                  width: 16,
-                  child: CircularProgressIndicator(
-                    color: ColorConstant.primary,
-                    strokeWidth: 2,
-                  ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: isUser
+                    ? const LinearGradient(
+                        colors: [Color(0xFF00BCD4), Color(0xFF0097A7)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: isUser ? null : ColorConstant.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(20),
+                  topRight: const Radius.circular(20),
+                  bottomLeft: Radius.circular(isUser ? 20 : 4),
+                  bottomRight: Radius.circular(isUser ? 4 : 20),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                border: isUser
+                    ? null
+                    : Border.all(
+                        color: ColorConstant.greyLight.withOpacity(0.5),
+                        width: 1,
+                      ),
               ),
-
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isUser)
+                    Text(
+                      message.text,
+                      style: TextStyle(
+                        fontSize: FontConstant.fontSize14,
+                        color: ColorConstant.white,
+                        fontFamily: FontConstant.robotoFontFamily,
+                        height: 1.5,
+                      ),
+                    )
+                  else
+                    MarkdownBody(
+                      data: message.text,
+                      styleSheet: MarkdownStyleSheet(
+                        p: TextStyle(
+                          fontSize: FontConstant.fontSize14,
+                          color: ColorConstant.black,
+                          fontFamily: FontConstant.robotoFontFamily,
+                          height: 1.5,
+                        ),
+                        strong: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
+              ),
+            ),
             if (message.sources != null && message.sources!.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Divider(
-                color: ColorConstant.greyDark.withOpacity(0.2),
-                height: 1,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Sumber materi terkait:',
-                style: TextStyle(
-                  fontSize: FontConstant.fontSize12,
-                  fontWeight: FontConstant.bold,
-                  color: ColorConstant.black,
-                  fontFamily: FontConstant.robotoFontFamily,
-                ),
-              ),
               const SizedBox(height: 8),
-              ...message.sources!.map((source) => _buildSourceItem(source)),
+              _buildSourceList(message.sources!),
             ],
           ],
         ),
@@ -405,60 +504,106 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget _buildSourceItem(_ChatSource source) {
+  Widget _buildTypingIndicator() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(3, (index) {
+        return TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0, end: 1),
+          duration: Duration(milliseconds: 400 + (index * 150)),
+          curve: Curves.easeInOut,
+          builder: (context, value, child) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: ColorConstant.primary.withOpacity(0.3 + (value * 0.7)),
+                shape: BoxShape.circle,
+              ),
+            );
+          },
+        );
+      }),
+    );
+  }
+
+  Widget _buildSourceList(List<_ChatSource> sources) {
+    return Column(
+      children: sources
+          .map((source) => _buildPremiumSourceCard(source))
+          .toList(),
+    );
+  }
+
+  Widget _buildPremiumSourceCard(_ChatSource source) {
     return GestureDetector(
-      onTap: () {
-        context.router.push(IllnessMaterialRoute(materialId: source.id));
-      },
+      onTap: () =>
+          context.router.push(IllnessMaterialRoute(materialId: source.id)),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(8),
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: ColorConstant.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: ColorConstant.greyLight, width: 1.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: ColorConstant.primary.withOpacity(0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: ColorConstant.primary.withOpacity(0.05),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(10),
               child: Image.network(
                 source.imageUrl,
-                width: 50,
-                height: 50,
+                width: 60,
+                height: 60,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
-                  width: 50,
-                  height: 50,
+                  width: 60,
+                  height: 60,
                   color: ColorConstant.greyLight,
                   child: const Icon(
-                    Icons.image_not_supported,
-                    size: 20,
+                    Icons.image_rounded,
                     color: ColorConstant.grey,
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                source.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: FontConstant.fontSize12,
-                  fontWeight: FontConstant.medium,
-                  color: ColorConstant.black,
-                  fontFamily: FontConstant.robotoFontFamily,
-                  height: 1.2,
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    source.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: FontConstant.fontSize12,
+                      fontWeight: FontConstant.bold,
+                      color: ColorConstant.black,
+                      height: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Baca Materi →',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: ColorConstant.primary,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: ColorConstant.greyDark,
-              size: 20,
             ),
           ],
         ),
@@ -466,66 +611,80 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 
-  Widget _buildInputBar(bool isLoading) {
+  Widget _buildFloatingInputBar(bool isLoading) {
     return Container(
-      color: ColorConstant.white,
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 10, bottom: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _messageController,
-              focusNode: _focusNode,
-              textInputAction: TextInputAction.send,
-              onSubmitted: (_) => _sendMessage(),
-              enabled: !isLoading,
-              style: TextStyle(
-                fontSize: FontConstant.fontSize14,
-                fontFamily: FontConstant.robotoFontFamily,
-                color: ColorConstant.black,
-              ),
-              decoration: InputDecoration(
-                hintText: isLoading
-                    ? 'AI sedang mengetik...'
-                    : 'Ketik Pesan...',
-                hintStyle: TextStyle(
-                  fontSize: FontConstant.fontSize14,
-                  color: ColorConstant.grey,
-                  fontFamily: FontConstant.robotoFontFamily,
-                ),
-                filled: true,
-                fillColor: ColorConstant.fieldBackground,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        decoration: BoxDecoration(
+          color: ColorConstant.white,
+          borderRadius: BorderRadius.circular(32),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                controller: _messageController,
+                focusNode: _focusNode,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (_) => _sendMessage(),
+                enabled: !isLoading,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: isLoading
+                      ? 'Topung sedang mengetik...'
+                      : 'Ketik sesuatu...',
+                  hintStyle: TextStyle(
+                    color: ColorConstant.greyDark.withOpacity(0.6),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: isLoading ? null : _sendMessage,
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: isLoading
-                    ? ColorConstant.greyLight
-                    : ColorConstant.primary,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.send_rounded,
-                color: isLoading ? ColorConstant.grey : ColorConstant.white,
-                size: 20,
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: isLoading ? null : _sendMessage,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00BCD4), Color(0xFF0097A7)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    if (!isLoading)
+                      BoxShadow(
+                        color: ColorConstant.primary.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                  ],
+                ),
+                child: Icon(
+                  isLoading
+                      ? Icons.hourglass_empty_rounded
+                      : Icons.send_rounded,
+                  color: ColorConstant.white,
+                  size: 20,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
