@@ -23,27 +23,27 @@ class CommentModel extends Equatable {
   final Map<String, dynamic>? user;
 
   factory CommentModel.fromJson(Map<String, dynamic> json) => CommentModel(
-        id: json['id'] as String,
-        content: json['content'] as String,
-        userId: json['userId'] as String,
-        materialId: json['materialId'] as String,
-        parentCommentId: json['parentCommentId'] as String?,
-        createdAt: json['createdAt'] as String,
-        updatedAt: json['updatedAt'] as String,
-        user: json['user'] as Map<String, dynamic>?,
-      );
+    id: json['id'] as String,
+    content: json['content'] as String,
+    userId: json['userId'] as String,
+    materialId: json['materialId'] as String,
+    parentCommentId: json['parentCommentId'] as String?,
+    createdAt: json['createdAt'] as String,
+    updatedAt: (json['updatedAt'] ?? json['createdAt']) as String,
+    user: json['user'] as Map<String, dynamic>?,
+  );
 
   @override
   List<Object?> get props => [
-        id,
-        content,
-        userId,
-        materialId,
-        parentCommentId,
-        createdAt,
-        updatedAt,
-        user,
-      ];
+    id,
+    content,
+    userId,
+    materialId,
+    parentCommentId,
+    createdAt,
+    updatedAt,
+    user,
+  ];
 }
 
 class CommentPaginationResponseModel extends Equatable {
@@ -56,14 +56,22 @@ class CommentPaginationResponseModel extends Equatable {
   final PaginationMetaModel meta;
 
   factory CommentPaginationResponseModel.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as List<dynamic>;
-    final meta = json['meta'] as Map<String, dynamic>;
+    final data = json['data'] as Map<String, dynamic>;
+    final items = data['items'] as List<dynamic>;
+    final pagination = data['pagination'] as Map<String, dynamic>;
 
     return CommentPaginationResponseModel(
-      comments: data
+      comments: items
           .map((e) => CommentModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      meta: PaginationMetaModel.fromJson(meta),
+      meta: PaginationMetaModel(
+        page: pagination['page'] as int,
+        pageSize: (pagination['pageSize'] ?? pagination['pagesize']) as int,
+        totalItems:
+            (pagination['totalItems'] ?? pagination['totalitems']) as int,
+        totalPages:
+            (pagination['totalPages'] ?? pagination['totalpages']) as int,
+      ),
     );
   }
 
@@ -72,33 +80,26 @@ class CommentPaginationResponseModel extends Equatable {
 }
 
 class InteractionPayload extends Equatable {
-  const InteractionPayload({
-    required this.interactionType,
-  });
+  const InteractionPayload({required this.interactionType});
 
   final String interactionType;
 
-  Map<String, dynamic> toJson() => {
-        'interactionType': interactionType,
-      };
+  Map<String, dynamic> toJson() => {'interactionType': interactionType};
 
   @override
   List<Object?> get props => [interactionType];
 }
 
 class CommentPayload extends Equatable {
-  const CommentPayload({
-    required this.content,
-    this.parentCommentId,
-  });
+  const CommentPayload({required this.content, this.parentCommentId});
 
   final String content;
   final String? parentCommentId;
 
   Map<String, dynamic> toJson() => {
-        'content': content,
-        'parentCommentId': parentCommentId,
-      };
+    'content': content,
+    'parentCommentId': parentCommentId,
+  };
 
   @override
   List<Object?> get props => [content, parentCommentId];

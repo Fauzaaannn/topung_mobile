@@ -14,12 +14,22 @@ class InteractionInitial extends InteractionState {}
 class CommentsLoading extends InteractionState {}
 
 class CommentsLoaded extends InteractionState {
-  const CommentsLoaded(this.response);
+  const CommentsLoaded({
+    required this.comments,
+    required this.currentPage,
+    required this.totalPages,
+    this.isLoadingMore = false,
+  });
 
-  final CommentPaginationResponseModel response;
+  final List<CommentModel> comments;
+  final int currentPage;
+  final int totalPages;
+  final bool isLoadingMore;
+
+  bool get hasReachedMax => currentPage >= totalPages;
 
   @override
-  List<Object?> get props => [response];
+  List<Object?> get props => [comments, currentPage, totalPages, isLoadingMore];
 }
 
 class CommentsError extends InteractionState {

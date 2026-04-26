@@ -161,28 +161,8 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
   void _showCommentBottomSheet() {
     CommentBottomSheet.show(
       context,
+      materialId: widget.data.id,
       initialChildSize: 0.65,
-      comments: const [
-        CommentItem(
-          username: 'Nama Pengguna',
-          comment: 'Komentar dari pengguna',
-          timeAgo: '10s',
-        ),
-        CommentItem(
-          username: 'Nama Pengguna',
-          comment: 'Komentar dari pengguna',
-          timeAgo: '10s',
-        ),
-        CommentItem(
-          username: 'Nama Pengguna',
-          comment: 'Komentar dari pengguna',
-          timeAgo: '10s',
-          isReply: true,
-        ),
-      ],
-      onSend: (text) {
-        // TODO: kirim komentar
-      },
     );
   }
 

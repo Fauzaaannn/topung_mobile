@@ -51,6 +51,8 @@ class InteractionRepositoryImpl implements InteractionRepository {
         'parentCommentId': parentCommentId,
       };
 
+      print('DEBUG: Sending Comment Payload: $payload');
+
       final result = await _remoteProvider.addComment(
         materialId: materialId,
         commentPayload: payload,
