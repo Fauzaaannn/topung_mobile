@@ -14,6 +14,8 @@ import 'package:topung_mobile/data/provider/remote/implementation/chatbot_remote
 import 'package:topung_mobile/data/provider/remote/interface/i_chatbot_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/implementation/profile_remote_provider.dart';
 import 'package:topung_mobile/data/provider/remote/interface/i_profile_remote_provider.dart';
+import 'package:topung_mobile/data/provider/remote/implementation/interaction_remote_provider.dart';
+import 'package:topung_mobile/data/provider/remote/interface/i_interaction_remote_provider.dart';
 
 final serviceLocator = GetIt.instance;
 
@@ -44,5 +46,9 @@ void initializeProviderModule() {
   
   serviceLocator.registerLazySingleton<IProfileRemoteProvider>(
     () => ProfileRemoteProvider(serviceLocator<Dio>()),
+  );
+
+  serviceLocator.registerLazySingleton<IInteractionRemoteProvider>(
+    () => InteractionRemoteProvider(serviceLocator<Dio>()),
   );
 }

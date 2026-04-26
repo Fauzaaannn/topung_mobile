@@ -20,6 +20,9 @@ import 'package:topung_mobile/domain/repositories/chatbot_repository.dart';
 import 'package:topung_mobile/data/provider/remote/interface/i_profile_remote_provider.dart';
 import 'package:topung_mobile/data/repositories/profile_repository_impl.dart';
 import 'package:topung_mobile/domain/repositories/profile_repository.dart';
+import 'package:topung_mobile/data/provider/remote/interface/i_interaction_remote_provider.dart';
+import 'package:topung_mobile/data/repositories/interaction_repository_impl.dart';
+import 'package:topung_mobile/domain/repositories/interaction_repository.dart';
 final serviceLocator = GetIt.instance;
 
 void initializeRepositoryModule() {
@@ -59,6 +62,12 @@ void initializeRepositoryModule() {
   serviceLocator.registerLazySingleton<ProfileRepository>(
     () => ProfileRepositoryImpl(
       serviceLocator<IProfileRemoteProvider>(),
+    ),
+  );
+
+  serviceLocator.registerLazySingleton<InteractionRepository>(
+    () => InteractionRepositoryImpl(
+      serviceLocator<IInteractionRemoteProvider>(),
     ),
   );
 }

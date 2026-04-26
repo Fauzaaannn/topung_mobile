@@ -190,7 +190,7 @@ Payload:
   "interactionType": "like"
 }
 ```
-Contoh nilai: `like`, `dislike`, `bookmark`, `view` (ikuti aturan DB kamu)
+Contoh nilai: `like`, `dislike`, `bookmark`, `view`, `share` (ikuti aturan DB kamu)
 
 ### `PUT /materials/:id/status`
 Auth: `Bearer user/admin`

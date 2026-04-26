@@ -13,6 +13,9 @@ import 'package:topung_mobile/domain/repositories/chatbot_repository.dart';
 import 'package:topung_mobile/domain/usecases/chatbot_usecases/chatbot_usecase.dart';
 import 'package:topung_mobile/domain/repositories/profile_repository.dart';
 import 'package:topung_mobile/domain/usecases/profile_usecases/profile_usecase.dart';
+import 'package:topung_mobile/domain/repositories/interaction_repository.dart';
+import 'package:topung_mobile/domain/usecases/interaction_usecases/interaction_usecase.dart';
+
 final serviceLocator = GetIt.instance;
 
 void initializeUsecaseModule() {
@@ -43,5 +46,9 @@ void initializeUsecaseModule() {
 
   serviceLocator.registerLazySingleton(
     () => ProfileUsecase(serviceLocator<ProfileRepository>()),
+  );
+
+  serviceLocator.registerLazySingleton(
+    () => InteractionUsecase(serviceLocator<InteractionRepository>()),
   );
 }
