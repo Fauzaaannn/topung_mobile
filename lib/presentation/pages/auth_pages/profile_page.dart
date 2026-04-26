@@ -9,6 +9,8 @@ import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
 import 'package:topung_mobile/core/services/i_secure_storage_services.dart';
 import 'package:topung_mobile/domain/usecases/auth_usecases/login_usecase.dart';
 import 'package:topung_mobile/presentation/bloc/auth_bloc/auth_bloc.dart';
+import 'package:topung_mobile/presentation/bloc/profile_cubit/profile_cubit.dart';
+import 'package:topung_mobile/domain/usecases/profile_usecases/profile_usecase.dart';
 import 'package:topung_mobile/presentation/widgets/buttons/custom_button.dart';
 
 @RoutePage()
@@ -43,12 +45,21 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthBloc(
-        loginUsecase: serviceLocator<LoginUsecase>(),
-        secureStorageService: serviceLocator<ISecureStorageService>(),
-        sharedPreferences: serviceLocator<SharedPreferences>(),
-      ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AuthBloc(
+            loginUsecase: serviceLocator<LoginUsecase>(),
+            secureStorageService: serviceLocator<ISecureStorageService>(),
+            sharedPreferences: serviceLocator<SharedPreferences>(),
+          ),
+        ),
+        BlocProvider(
+          create: (context) =>
+              ProfileCubit(profileUsecase: serviceLocator<ProfileUsecase>())
+                ..getMe(),
+        ),
+      ],
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is LogoutSuccess) {
@@ -78,45 +89,75 @@ class ProfilePage extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
-                    child: Card(
-                      elevation: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildProfileField('Nama', 'Tralalelo Tralala'),
-                            const SizedBox(height: 20),
-                            _buildProfileField('Email', 'tralelo@gmail.com'),
-                            const SizedBox(height: 20),
-                            _buildProfileField('Usia', '40'),
-                            const SizedBox(height: 20),
-                            _buildProfileField(
-                              'Jenis Kelamin',
-                              'Laki-laki / Perempuan',
-                            ),
-                            const SizedBox(height: 40),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: BlocBuilder<ProfileCubit, ProfileState>(
+                      builder: (context, state) {
+                        if (state is ProfileLoading) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (state is ProfileError) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                Text(state.message),
+                                const SizedBox(height: 16),
                                 CustomButton(
-                                  label: 'Logout',
-                                  height: 40,
-                                  borderRadius: 20,
-                                  backgroundColor: ColorConstant.error,
-                                  onPressed: () => _showLogoutDialog(context),
-                                ),
-                                CustomButton(
-                                  label: 'Edit',
-                                  height: 40,
-                                  borderRadius: 20,
-                                  onPressed: () {},
+                                  label: 'Coba Lagi',
+                                  onPressed: () =>
+                                      context.read<ProfileCubit>().getMe(),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ),
+                          );
+                        }
+
+                        if (state is ProfileLoaded) {
+                          final profile = state.profile;
+                          return Card(
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildProfileField('Nama', profile.name),
+                                  const SizedBox(height: 20),
+                                  _buildProfileField('Email', profile.email),
+                                  const SizedBox(height: 20),
+                                  _buildProfileField('Role', profile.role),
+                                  const SizedBox(height: 40),
+                                  Row(
+                                    mainAxisAlignment:
+                                        // MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.end,
+                                    children: [
+                                      // CustomButton(
+                                      //   label: 'Edit',
+                                      //   height: 40,
+                                      //   borderRadius: 20,
+                                      //   onPressed: () {},
+                                      // ),
+                                      CustomButton(
+                                        label: 'Logout',
+                                        height: 40,
+                                        borderRadius: 20,
+                                        backgroundColor: ColorConstant.error,
+                                        onPressed: () =>
+                                            _showLogoutDialog(context),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ),
                 ),
