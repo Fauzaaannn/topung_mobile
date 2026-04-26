@@ -7,6 +7,10 @@ import 'package:topung_mobile/core/modules/app_module.dart';
 import 'package:topung_mobile/data/model/illness_model/illness_material_model.dart';
 import 'package:topung_mobile/domain/usecases/illness_material_usecases/illness_get_material_usecase.dart';
 import 'package:topung_mobile/presentation/bloc/illness_material_bloc/illness_material_bloc.dart';
+import 'package:topung_mobile/presentation/bloc/interaction_bloc/interaction_bloc.dart';
+import 'package:topung_mobile/presentation/bloc/interaction_bloc/interaction_event.dart';
+import 'package:topung_mobile/presentation/bloc/interaction_bloc/interaction_state.dart';
+import 'package:topung_mobile/domain/usecases/interaction_usecases/interaction_usecase.dart';
 import 'package:topung_mobile/presentation/widgets/drawer/comment_bottom_sheet.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -19,10 +23,18 @@ class IllnessMaterialPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => IllnessMaterialBloc(
-        illnessGetMaterialUsecase: serviceLocator<IllnessGetMaterialUsecase>(),
-      )..add(IllnessMaterialFetched(materialId: materialId)),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => IllnessMaterialBloc(
+            illnessGetMaterialUsecase:
+                serviceLocator<IllnessGetMaterialUsecase>(),
+          )..add(IllnessMaterialFetched(materialId: materialId)),
+        ),
+        BlocProvider(
+          create: (_) => InteractionBloc(serviceLocator<InteractionUsecase>()),
+        ),
+      ],
       child: const _IllnessMaterialView(),
     );
   }
@@ -120,6 +132,13 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
   @override
   void initState() {
     super.initState();
+    _isLiked = widget.data.myInteractions.any(
+      (i) => i.interactionType == 'like',
+    );
+    _isDisliked = widget.data.myInteractions.any(
+      (i) => i.interactionType == 'dislike',
+    );
+
     final videoId = YoutubePlayer.convertUrlToId(widget.data.videoUrl);
     if (videoId != null) {
       _youtubeController = YoutubePlayerController(
@@ -169,6 +188,20 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<InteractionBloc, InteractionState>(
+      listener: (context, state) {
+        if (state is InteractionActionError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+          // Optional: revert local state if needed
+        }
+      },
+      child: _buildBody(context),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
     if (_youtubeController != null) {
       return YoutubePlayerBuilder(
         player: YoutubePlayer(
@@ -330,10 +363,18 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
           mainAxisSize: MainAxisSize.min,
           children: [
             GestureDetector(
-              onTap: () => setState(() {
-                _isLiked = !_isLiked;
-                if (_isLiked) _isDisliked = false;
-              }),
+              onTap: () {
+                setState(() {
+                  _isLiked = !_isLiked;
+                  if (_isLiked) _isDisliked = false;
+                });
+                context.read<InteractionBloc>().add(
+                  PostInteractionEvent(
+                    materialId: widget.data.id,
+                    interactionType: 'like',
+                  ),
+                );
+              },
               child: Icon(
                 _isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
                 color: _isLiked ? ColorConstant.primary : ColorConstant.grey,
@@ -342,10 +383,18 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
             ),
             const SizedBox(width: 12),
             GestureDetector(
-              onTap: () => setState(() {
-                _isDisliked = !_isDisliked;
-                if (_isDisliked) _isLiked = false;
-              }),
+              onTap: () {
+                setState(() {
+                  _isDisliked = !_isDisliked;
+                  if (_isDisliked) _isLiked = false;
+                });
+                context.read<InteractionBloc>().add(
+                  PostInteractionEvent(
+                    materialId: widget.data.id,
+                    interactionType: 'dislike',
+                  ),
+                );
+              },
               child: Icon(
                 _isDisliked ? Icons.thumb_down : Icons.thumb_down_outlined,
                 color: _isDisliked ? ColorConstant.primary : ColorConstant.grey,

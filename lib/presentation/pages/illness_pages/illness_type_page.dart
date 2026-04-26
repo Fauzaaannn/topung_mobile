@@ -8,6 +8,10 @@ import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
 import 'package:topung_mobile/domain/usecases/illness_type_usecases/illness_type_usecase.dart';
 import 'package:topung_mobile/presentation/bloc/illness_type_bloc/illness_type_bloc.dart';
 import 'package:topung_mobile/presentation/widgets/cards/illness_type_card.dart';
+import 'package:topung_mobile/presentation/bloc/interaction_bloc/interaction_bloc.dart';
+import 'package:topung_mobile/presentation/bloc/interaction_bloc/interaction_event.dart';
+import 'package:topung_mobile/presentation/bloc/interaction_bloc/interaction_state.dart';
+import 'package:topung_mobile/domain/usecases/interaction_usecases/interaction_usecase.dart';
 
 @RoutePage()
 class IllnessTypePage extends StatelessWidget {
@@ -22,10 +26,17 @@ class IllnessTypePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => IllnessTypeBloc(
-        illnessTypeUsecase: serviceLocator<IllnessTypeUsecase>(),
-      )..add(IllnessTypeFetched(categoryId: categoryId)),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => IllnessTypeBloc(
+            illnessTypeUsecase: serviceLocator<IllnessTypeUsecase>(),
+          )..add(IllnessTypeFetched(categoryId: categoryId)),
+        ),
+        BlocProvider(
+          create: (_) => InteractionBloc(serviceLocator<InteractionUsecase>()),
+        ),
+      ],
       child: _IllnessTypeView(
         categoryId: categoryId,
         categoryTitle: categoryTitle,
@@ -72,72 +83,113 @@ class _IllnessTypeViewState extends State<_IllnessTypeView> {
         ),
         centerTitle: true,
       ),
-      body: BlocBuilder<IllnessTypeBloc, IllnessTypeState>(
-        builder: (context, state) {
-          if (state is IllnessTypeLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<IllnessTypeBloc, IllnessTypeState>(
+            listener: (context, state) {
+              if (state is IllnessTypeSuccess) {
+                setState(() {
+                  for (final item in state.data.items) {
+                    if (item.myInteractions.contains('bookmark')) {
+                      _bookmarkedIds.add(item.id);
+                    }
+                  }
+                });
+              }
+            },
+          ),
+          BlocListener<InteractionBloc, InteractionState>(
+            listener: (context, state) {
+              if (state is InteractionActionError) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.message)));
+              }
+            },
+          ),
+        ],
+        child: BlocBuilder<IllnessTypeBloc, IllnessTypeState>(
+          builder: (context, state) {
+            if (state is IllnessTypeLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (state is IllnessTypeFailure) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    state.message,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: ColorConstant.black,
-                      fontFamily: FontConstant.robotoFontFamily,
+            if (state is IllnessTypeFailure) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: ColorConstant.black,
+                        fontFamily: FontConstant.robotoFontFamily,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => context.read<IllnessTypeBloc>().add(
-                      IllnessTypeFetched(categoryId: widget.categoryId),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.read<IllnessTypeBloc>().add(
+                        IllnessTypeFetched(categoryId: widget.categoryId),
+                      ),
+                      child: const Text('Coba Lagi'),
                     ),
-                    child: const Text('Coba Lagi'),
-                  ),
-                ],
-              ),
-            );
-          }
+                  ],
+                ),
+              );
+            }
 
-          if (state is IllnessTypeSuccess) {
-            final items = List.of(state.data.items)
-              ..sort((a, b) {
-                final idA = int.tryParse(a.id);
-                final idB = int.tryParse(b.id);
-                if (idA != null && idB != null) {
-                  return idA.compareTo(idB);
-                }
-                return a.id.compareTo(b.id);
-              });
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return IllnessTypeCard(
-                  title: item.title,
-                  description: item.textContent,
-                  imageUrl: item.imageUrl.isNotEmpty ? item.imageUrl : null,
-                  status: _bookmarkedIds.contains(item.id)
-                      ? IllnessTypeCardStatus.bookmarked
-                      : IllnessTypeCardStatus.none,
-                  onTap: () {
-                    context.router.push(
-                      IllnessMaterialRoute(materialId: item.id),
-                    );
-                  },
-                );
-              },
-            );
-          }
+            if (state is IllnessTypeSuccess) {
+              final items = List.of(state.data.items)
+                ..sort((a, b) {
+                  final idA = int.tryParse(a.id);
+                  final idB = int.tryParse(b.id);
+                  if (idA != null && idB != null) {
+                    return idA.compareTo(idB);
+                  }
+                  return a.id.compareTo(b.id);
+                });
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: items.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return IllnessTypeCard(
+                    title: item.title,
+                    description: item.textContent,
+                    imageUrl: item.imageUrl.isNotEmpty ? item.imageUrl : null,
+                    status: _bookmarkedIds.contains(item.id)
+                        ? IllnessTypeCardStatus.bookmarked
+                        : IllnessTypeCardStatus.none,
+                    onStatusTap: () {
+                      setState(() {
+                        if (_bookmarkedIds.contains(item.id)) {
+                          _bookmarkedIds.remove(item.id);
+                        } else {
+                          _bookmarkedIds.add(item.id);
+                        }
+                      });
+                      context.read<InteractionBloc>().add(
+                        PostInteractionEvent(
+                          materialId: item.id,
+                          interactionType: 'bookmark',
+                        ),
+                      );
+                    },
+                    onTap: () {
+                      context.router.push(
+                        IllnessMaterialRoute(materialId: item.id),
+                      );
+                    },
+                  );
+                },
+              );
+            }
 
-          return const SizedBox.shrink();
-        },
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }

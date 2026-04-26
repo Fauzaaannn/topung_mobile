@@ -51,7 +51,7 @@ class IllnessMaterialModel extends Equatable {
       createdAt: data['createdAt'] as String,
       updatedAt: data['updatedAt'] as String,
       myInteractions: (data['myInteractions'] as List<dynamic>)
-          .map((e) => MaterialInteractionModel.fromJson(e as Map<String, dynamic>))
+          .map((e) => MaterialInteractionModel(interactionType: e.toString()))
           .toList(),
       myStatus: data['myStatus'] as String?,
     );
@@ -59,7 +59,15 @@ class IllnessMaterialModel extends Equatable {
 
   @override
   List<Object?> get props => [
-    id, categoryId, title, videoUrl, textContent,
-    imageUrl, createdAt, updatedAt, myInteractions, myStatus,
+    id,
+    categoryId,
+    title,
+    videoUrl,
+    textContent,
+    imageUrl,
+    createdAt,
+    updatedAt,
+    myInteractions,
+    myStatus,
   ];
 }
