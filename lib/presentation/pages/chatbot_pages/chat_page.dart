@@ -35,12 +35,25 @@ class _ChatSource {
   });
 }
 
+class _ChatImage {
+  final String imageUrl;
+  final String? imageCaption;
+
+  const _ChatImage({required this.imageUrl, this.imageCaption});
+}
+
 class _ChatMessage {
   final String text;
   final _MessageRole role;
   final List<_ChatSource>? sources;
+  final List<_ChatImage>? images;
 
-  const _ChatMessage({required this.text, required this.role, this.sources});
+  const _ChatMessage({
+    required this.text,
+    required this.role,
+    this.sources,
+    this.images,
+  });
 }
 
 @RoutePage()
@@ -155,11 +168,20 @@ class _ChatPageState extends State<ChatPage> {
                     );
                   }).toList();
 
+                  final mappedImages = state.response.images.map((e) {
+                    final mapData = e as Map<String, dynamic>;
+                    return _ChatImage(
+                      imageUrl: mapData['imageUrl']?.toString() ?? '',
+                      imageCaption: mapData['imageCaption']?.toString(),
+                    );
+                  }).toList();
+
                   _messages.add(
                     _ChatMessage(
                       text: state.response.answer,
                       role: _MessageRole.ai,
                       sources: mappedSources,
+                      images: mappedImages,
                     ),
                   );
                 });
@@ -206,6 +228,17 @@ class _ChatPageState extends State<ChatPage> {
                                       mapData['videoUrl']?.toString() ?? '',
                                   imageUrl:
                                       mapData['imageUrl']?.toString() ?? '',
+                                );
+                              }).toList() ??
+                              [],
+                          images:
+                              msg.images?.map((e) {
+                                final mapData = e as Map<String, dynamic>;
+                                return _ChatImage(
+                                  imageUrl:
+                                      mapData['imageUrl']?.toString() ?? '',
+                                  imageCaption: mapData['imageCaption']
+                                      ?.toString(),
                                 );
                               }).toList() ??
                               [],
@@ -471,6 +504,37 @@ class _ChatPageState extends State<ChatPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (!isUser &&
+                      message.images != null &&
+                      message.images!.isNotEmpty)
+                    ...message.images!.map(
+                      (img) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                img.imageUrl,
+                                width: double.infinity,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, __, ___) => Container(
+                                  width: double.infinity,
+                                  height: 150,
+                                  color: ColorConstant.greyLight,
+                                  child: const Icon(
+                                    Icons.image_rounded,
+                                    color: ColorConstant.grey,
+                                    size: 40,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   if (isUser)
                     Text(
                       message.text,

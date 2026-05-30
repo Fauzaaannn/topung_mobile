@@ -78,27 +78,33 @@ class ChatbotHistoryPaginationModel extends Equatable {
 class ChatbotMessageModel extends Equatable {
   const ChatbotMessageModel({
     required this.id,
+    required this.userId,
     required this.conversationId,
     required this.question,
     required this.answer,
     this.sources,
+    this.images,
     this.createdAt,
   });
 
   final String id;
+  final String userId;
   final String conversationId;
   final String question;
   final String answer;
   final List<dynamic>? sources;
+  final List<dynamic>? images;
   final DateTime? createdAt;
 
   factory ChatbotMessageModel.fromJson(Map<String, dynamic> json) =>
       ChatbotMessageModel(
         id: json['id'] as String? ?? '',
+        userId: json['userId'] as String? ?? '',
         conversationId: json['conversationId'] as String? ?? '',
         question: json['question'] as String? ?? '',
         answer: json['answer'] as String? ?? '',
         sources: json['sources'] as List<dynamic>? ?? [],
+        images: json['images'] as List<dynamic>? ?? [],
         createdAt: json['createdAt'] != null
             ? DateTime.tryParse(json['createdAt'] as String)
             : json['timestamp'] != null 
@@ -107,7 +113,7 @@ class ChatbotMessageModel extends Equatable {
       );
 
   @override
-  List<Object?> get props => [id, conversationId, question, answer, sources, createdAt];
+  List<Object?> get props => [id, userId, conversationId, question, answer, sources, images, createdAt];
 }
 
 class ChatbotMessagePaginationModel extends Equatable {
