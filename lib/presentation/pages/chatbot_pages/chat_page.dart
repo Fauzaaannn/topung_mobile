@@ -464,6 +464,30 @@ class _ChatPageState extends State<ChatPage> {
               ? CrossAxisAlignment.end
               : CrossAxisAlignment.start,
           children: [
+            if (!isUser && message.images != null && message.images!.isNotEmpty)
+              ...message.images!.map(
+                (img) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      img.imageUrl,
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Container(
+                        width: double.infinity,
+                        height: 150,
+                        color: ColorConstant.greyLight,
+                        child: const Icon(
+                          Icons.image_rounded,
+                          color: ColorConstant.grey,
+                          size: 40,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             Container(
               width: isUser ? null : double.infinity,
               constraints: BoxConstraints(
@@ -504,37 +528,6 @@ class _ChatPageState extends State<ChatPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!isUser &&
-                      message.images != null &&
-                      message.images!.isNotEmpty)
-                    ...message.images!.map(
-                      (img) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                img.imageUrl,
-                                width: double.infinity,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) => Container(
-                                  width: double.infinity,
-                                  height: 150,
-                                  color: ColorConstant.greyLight,
-                                  child: const Icon(
-                                    Icons.image_rounded,
-                                    color: ColorConstant.grey,
-                                    size: 40,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   if (isUser)
                     Text(
                       message.text,
@@ -547,10 +540,34 @@ class _ChatPageState extends State<ChatPage> {
                     )
                   else
                     MarkdownBody(
-                      data: message.text,
+                      data: message.text.replaceAllMapped(
+                        RegExp(r'([a-z][\)\]\.\?!])([A-Z])'),
+                        (m) => '${m[1]}\n\n${m[2]}',
+                      ),
                       styleSheet: MarkdownStyleSheet(
                         p: TextStyle(
                           fontSize: FontConstant.fontSize14,
+                          color: ColorConstant.black,
+                          fontFamily: FontConstant.robotoFontFamily,
+                          height: 1.5,
+                        ),
+                        h1: TextStyle(
+                          fontSize: FontConstant.fontSize16,
+                          fontWeight: FontWeight.bold,
+                          color: ColorConstant.black,
+                          fontFamily: FontConstant.robotoFontFamily,
+                          height: 1.5,
+                        ),
+                        h2: TextStyle(
+                          fontSize: FontConstant.fontSize16,
+                          fontWeight: FontWeight.bold,
+                          color: ColorConstant.black,
+                          fontFamily: FontConstant.robotoFontFamily,
+                          height: 1.5,
+                        ),
+                        h3: TextStyle(
+                          fontSize: FontConstant.fontSize14,
+                          fontWeight: FontWeight.bold,
                           color: ColorConstant.black,
                           fontFamily: FontConstant.robotoFontFamily,
                           height: 1.5,
