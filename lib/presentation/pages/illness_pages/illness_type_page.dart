@@ -90,7 +90,7 @@ class _IllnessTypeViewState extends State<_IllnessTypeView> {
               if (state is IllnessTypeSuccess) {
                 setState(() {
                   for (final item in state.data.items) {
-                    if (item.myInteractions.contains('bookmark')) {
+                    if (item.isBookmarked) {
                       _bookmarkedIds.add(item.id);
                     }
                   }

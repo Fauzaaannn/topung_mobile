@@ -13,13 +13,21 @@ class CommentItem {
   final String comment;
   final String timeAgo;
   final bool isReply;
+  final int replyCount;
+  final bool isExpanded;
+  final bool isToggleItem;
+  final String? toggleText;
 
   const CommentItem({
     required this.id,
-    required this.username,
-    required this.comment,
-    required this.timeAgo,
+    this.username = '',
+    this.comment = '',
+    this.timeAgo = '',
     this.isReply = false,
+    this.replyCount = 0,
+    this.isExpanded = false,
+    this.isToggleItem = false,
+    this.toggleText,
   });
 }
 
@@ -83,6 +91,7 @@ class CommentBottomSheet extends StatefulWidget {
 class _CommentBottomSheetState extends State<CommentBottomSheet> {
   final _commentController = TextEditingController();
   final _focusNode = FocusNode();
+  final Map<String, int> _visibleRepliesCount = {};
   String? _replyingToId;
   String? _replyingToUser;
 
@@ -214,7 +223,6 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                           .toList();
 
                       // 2. Susun ulang: Root diikuti oleh semua keturunannya (flat)
-                      final List<CommentModel> sortedList = [];
                       final Map<String, List<CommentModel>> parentToChildren =
                           {};
 
@@ -226,47 +234,111 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         }
                       }
 
-                      // Fungsi untuk mengambil semua keturunan secara rekursif
-                      void addDescendants(String parentId) {
-                        final children = parentToChildren[parentId] ?? [];
-                        // Urutkan anak berdasarkan waktu (terlama ke terbaru)
-                        children.sort(
-                          (a, b) => a.createdAt.compareTo(b.createdAt),
+                      for (var root in rootComments) {
+                        final descendants = <CommentModel>[];
+
+                        void collectDescendants(String parentId) {
+                          final children = parentToChildren[parentId] ?? [];
+                          children.sort(
+                            (a, b) => a.createdAt.compareTo(b.createdAt),
+                          );
+
+                          for (var child in children) {
+                            if (!descendants.contains(child)) {
+                              descendants.add(child);
+                              collectDescendants(child.id);
+                            }
+                          }
+                        }
+
+                        collectDescendants(root.id);
+
+                        final visibleCount = _visibleRepliesCount[root.id] ?? 0;
+                        final isExpanded = visibleCount > 0;
+                        final replyCount = descendants.length;
+
+                        items.add(
+                          CommentItem(
+                            id: root.id,
+                            username:
+                                root.username ?? root.user?['name'] ?? 'User',
+                            comment: root.content,
+                            timeAgo: _formatDate(root.createdAt),
+                            isReply: false,
+                            replyCount: replyCount,
+                            isExpanded: isExpanded,
+                          ),
                         );
 
-                        for (var child in children) {
-                          if (!sortedList.contains(child)) {
-                            sortedList.add(child);
-                            addDescendants(
-                              child.id,
-                            ); // Rekursi untuk mencari cucu, dst
+                        if (isExpanded) {
+                          // Tampilkan bertahap sesuai visibleCount
+                          final limitedDescendants = descendants
+                              .take(visibleCount)
+                              .toList();
+                          for (var desc in limitedDescendants) {
+                            items.add(
+                              CommentItem(
+                                id: desc.id,
+                                username:
+                                    desc.username ??
+                                    desc.user?['name'] ??
+                                    'User',
+                                comment: desc.content,
+                                timeAgo: _formatDate(desc.createdAt),
+                                isReply: true,
+                              ),
+                            );
+                          }
+                        }
+
+                        // Tambahkan item toggle KHUSUS jika memiliki reply
+                        if (replyCount > 0) {
+                          String text;
+                          if (visibleCount >= replyCount) {
+                            text = 'Sembunyikan balasan';
+                          } else if (visibleCount == 0) {
+                            text = 'Lihat balasan ($replyCount)';
+                          } else {
+                            final remaining = replyCount - visibleCount;
+                            text = 'Lihat balasan ($remaining)';
+                          }
+
+                          items.add(
+                            CommentItem(
+                              id: root.id,
+                              isToggleItem: true,
+                              isReply: true, // Supaya menjorok seperti reply
+                              toggleText: text,
+                              replyCount: replyCount,
+                            ),
+                          );
+                        }
+                      }
+
+                      // Tambahkan komentar yang mungkin "yatim"
+                      for (var c in allComments) {
+                        if (!items.any((item) => item.id == c.id) &&
+                            !rootComments.contains(c)) {
+                          // Jika c ada di descendants tapi tidak masuk ke items karena max 5 atau collapsed,
+                          // maka c tidak boleh dimasukkan sebagai yatim kecuali kita benar-benar menganggapnya yatim.
+                          // Untuk amannya, yatim adalah komentar yang parentnya tidak ada di allComments.
+                          final isOrphan = !allComments.any(
+                            (parent) => parent.id == c.parentCommentId,
+                          );
+                          if (isOrphan) {
+                            items.add(
+                              CommentItem(
+                                id: c.id,
+                                username:
+                                    c.username ?? c.user?['name'] ?? 'User',
+                                comment: c.content,
+                                timeAgo: _formatDate(c.createdAt),
+                                isReply: c.parentCommentId != null,
+                              ),
+                            );
                           }
                         }
                       }
-
-                      for (var root in rootComments) {
-                        sortedList.add(root);
-                        addDescendants(root.id);
-                      }
-
-                      // Tambahkan komentar yang mungkin "yatim" (induknya tidak ada di list karena pagination)
-                      for (var c in allComments) {
-                        if (!sortedList.contains(c)) {
-                          sortedList.add(c);
-                        }
-                      }
-
-                      items = sortedList
-                          .map(
-                            (e) => CommentItem(
-                              id: e.id,
-                              username: e.user?['name'] ?? 'User',
-                              comment: e.content,
-                              timeAgo: _formatDate(e.createdAt),
-                              isReply: e.parentCommentId != null,
-                            ),
-                          )
-                          .toList();
                     }
 
                     if (items.isEmpty) {
@@ -304,10 +376,29 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                         }
                         return _CommentTile(
                           item: items[index],
-                          onReply: () => _handleReply(
-                            items[index].id,
-                            items[index].username,
-                          ),
+                          onReply: items[index].isToggleItem
+                              ? null
+                              : () => _handleReply(
+                                  items[index].id,
+                                  items[index].username,
+                                ),
+                          onToggleExpand: items[index].isToggleItem
+                              ? () {
+                                  setState(() {
+                                    final rootId = items[index].id;
+                                    final total = items[index].replyCount;
+                                    final current =
+                                        _visibleRepliesCount[rootId] ?? 0;
+
+                                    if (current >= total) {
+                                      _visibleRepliesCount[rootId] = 0;
+                                    } else {
+                                      _visibleRepliesCount[rootId] =
+                                          current + 5;
+                                    }
+                                  });
+                                }
+                              : null,
                         );
                       },
                     );
@@ -333,10 +424,13 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
                       ),
                       const Spacer(),
                       GestureDetector(
-                        onTap: () => setState(() {
-                          _replyingToId = null;
-                          _replyingToUser = null;
-                        }),
+                        onTap: () {
+                          setState(() {
+                            _replyingToId = null;
+                            _replyingToUser = null;
+                          });
+                          _commentController.clear();
+                        },
                         child: const Icon(
                           Icons.cancel,
                           size: 16,
@@ -442,11 +536,30 @@ class _CommentBottomSheetState extends State<CommentBottomSheet> {
 class _CommentTile extends StatelessWidget {
   final CommentItem item;
   final VoidCallback? onReply;
+  final VoidCallback? onToggleExpand;
 
-  const _CommentTile({required this.item, this.onReply});
+  const _CommentTile({required this.item, this.onReply, this.onToggleExpand});
 
   @override
   Widget build(BuildContext context) {
+    if (item.isToggleItem) {
+      return Padding(
+        padding: const EdgeInsets.only(left: 52, bottom: 16, top: 4),
+        child: GestureDetector(
+          onTap: onToggleExpand,
+          child: Text(
+            item.toggleText ?? '',
+            style: TextStyle(
+              fontSize: FontConstant.fontSize12,
+              color: ColorConstant.primary,
+              fontWeight: FontConstant.medium,
+              fontFamily: FontConstant.robotoFontFamily,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: EdgeInsets.only(
         top: 10,

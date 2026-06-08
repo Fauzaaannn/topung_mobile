@@ -11,7 +11,7 @@ class IllnessTypeModel extends Equatable {
     required this.imageUrl,
     required this.createdAt,
     required this.updatedAt,
-    this.myInteractions = const [],
+    this.isBookmarked = false,
   });
 
   final String id;
@@ -22,7 +22,7 @@ class IllnessTypeModel extends Equatable {
   final String imageUrl;
   final String createdAt;
   final String updatedAt;
-  final List<String> myInteractions;
+  final bool isBookmarked;
 
   factory IllnessTypeModel.fromJson(Map<String, dynamic> json) =>
       IllnessTypeModel(
@@ -34,10 +34,7 @@ class IllnessTypeModel extends Equatable {
         imageUrl: json['imageUrl'] as String,
         createdAt: json['createdAt'] as String,
         updatedAt: json['updatedAt'] as String,
-        myInteractions: (json['myInteractions'] as List<dynamic>?)
-                ?.map((e) => e.toString())
-                .toList() ??
-            [],
+        isBookmarked: json['isBookmarked'] as bool? ?? false,
       );
 
   @override
@@ -50,7 +47,7 @@ class IllnessTypeModel extends Equatable {
     imageUrl,
     createdAt,
     updatedAt,
-    myInteractions,
+    isBookmarked,
   ];
 }
 

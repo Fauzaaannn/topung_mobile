@@ -1,4 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:topung_mobile/core/modules/app_module.dart';
+import 'package:topung_mobile/core/routing/app_route_service.dart';
+import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
 import 'package:topung_mobile/core/services/secure_storage_services.dart';
 
 class ApiInterceptor extends Interceptor {
@@ -34,6 +37,7 @@ class ApiInterceptor extends Interceptor {
   ) async {
     if (err.response?.statusCode == 401) {
       await _secureStorageService.deleteAll();
+      serviceLocator<AppRouter>().replaceAll([const LoginRoute()]);
     }
 
     return handler.next(err);

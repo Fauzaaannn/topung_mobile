@@ -29,7 +29,7 @@ class _SplashPageState extends State<SplashPage> {
 
     final token = await _secureStorage.getToken();
 
-    if (token == null) {
+    if (token == null || token.isEmpty) {
       context.router.replace(const LoginRoute());
     } else {
       if (widget.fromLogin) {

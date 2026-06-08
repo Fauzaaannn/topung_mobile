@@ -6,6 +6,7 @@ class CommentModel extends Equatable {
     required this.id,
     required this.content,
     required this.userId,
+    this.username,
     required this.materialId,
     this.parentCommentId,
     required this.createdAt,
@@ -16,6 +17,7 @@ class CommentModel extends Equatable {
   final String id;
   final String content;
   final String userId;
+  final String? username;
   final String materialId;
   final String? parentCommentId;
   final String createdAt;
@@ -26,6 +28,7 @@ class CommentModel extends Equatable {
     id: json['id'] as String,
     content: json['content'] as String,
     userId: json['userId'] as String,
+    username: json['username'] as String?,
     materialId: json['materialId'] as String,
     parentCommentId: json['parentCommentId'] as String?,
     createdAt: json['createdAt'] as String,
@@ -38,6 +41,7 @@ class CommentModel extends Equatable {
     id,
     content,
     userId,
+    username,
     materialId,
     parentCommentId,
     createdAt,
