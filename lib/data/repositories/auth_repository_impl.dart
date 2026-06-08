@@ -33,15 +33,19 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<String, void>> register({
-    required String name,
+    required String username,
     required String email,
     required String password,
+    required int usia,
+    required String jenisKelamin,
   }) async {
     try {
       await _remoteProvider.register(
-        name: name,
+        username: username,
         email: email,
         password: password,
+        usia: usia,
+        jenisKelamin: jenisKelamin,
       );
       return const Right(null);
     } on DioException catch (e) {

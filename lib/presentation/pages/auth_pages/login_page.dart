@@ -8,6 +8,7 @@ import 'package:topung_mobile/core/modules/app_module.dart';
 import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
 import 'package:topung_mobile/core/services/i_secure_storage_services.dart';
 import 'package:topung_mobile/domain/usecases/auth_usecases/login_usecase.dart';
+import 'package:topung_mobile/domain/usecases/auth_usecases/register_usecase.dart';
 import 'package:topung_mobile/presentation/bloc/auth_bloc/auth_bloc.dart';
 import 'package:topung_mobile/presentation/widgets/buttons/custom_button.dart';
 import 'package:topung_mobile/presentation/widgets/text_fields/labeled_text_fields.dart';
@@ -21,6 +22,7 @@ class LoginPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => AuthBloc(
         loginUsecase: serviceLocator<LoginUsecase>(),
+        registerUsecase: serviceLocator<RegisterUsecase>(),
         secureStorageService: serviceLocator<ISecureStorageService>(),
         sharedPreferences: serviceLocator<SharedPreferences>(),
       ),

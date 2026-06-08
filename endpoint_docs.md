@@ -73,9 +73,11 @@ Payload:
 
 ```json
 {
-  "name": "User Satu",
+  "username": "user1",
   "email": "user1@mail.com",
-  "password": "password123"
+  "password": "password123",
+  "usia": 25,
+  "jenisKelamin": "L"
 }
 ```
 
@@ -111,9 +113,11 @@ Payload:
 
 ```json
 {
-  "name": "User Dua",
+  "username": "user2",
   "email": "user2@mail.com",
-  "password": "password123"
+  "password": "password123",
+  "usia": 30,
+  "jenisKelamin": "P"
 }
 ```
 
@@ -436,7 +440,7 @@ Semua endpoint ini butuh token admin.
 
 ### User Role Admin
 
-- `PUT /admin/users/:id/role`
+- `PATCH /users/:id/role`
   - Auth: `Bearer admin`
 
 ```json

@@ -8,6 +8,7 @@ import 'package:topung_mobile/core/modules/app_module.dart';
 import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
 import 'package:topung_mobile/core/services/i_secure_storage_services.dart';
 import 'package:topung_mobile/domain/usecases/auth_usecases/login_usecase.dart';
+import 'package:topung_mobile/domain/usecases/auth_usecases/register_usecase.dart';
 import 'package:topung_mobile/presentation/bloc/auth_bloc/auth_bloc.dart';
 import 'package:topung_mobile/presentation/bloc/profile_cubit/profile_cubit.dart';
 import 'package:topung_mobile/domain/usecases/profile_usecases/profile_usecase.dart';
@@ -50,6 +51,7 @@ class ProfilePage extends StatelessWidget {
         BlocProvider(
           create: (context) => AuthBloc(
             loginUsecase: serviceLocator<LoginUsecase>(),
+            registerUsecase: serviceLocator<RegisterUsecase>(),
             secureStorageService: serviceLocator<ISecureStorageService>(),
             sharedPreferences: serviceLocator<SharedPreferences>(),
           ),
@@ -123,11 +125,26 @@ class ProfilePage extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildProfileField('Nama', profile.name),
+                                  _buildProfileField(
+                                    'Username',
+                                    profile.username,
+                                  ),
                                   const SizedBox(height: 20),
                                   _buildProfileField('Email', profile.email),
                                   const SizedBox(height: 20),
-                                  _buildProfileField('Role', profile.role),
+                                  _buildProfileField(
+                                    'Usia',
+                                    '${profile.usia} tahun',
+                                  ),
+                                  const SizedBox(height: 20),
+                                  _buildProfileField(
+                                    'Jenis Kelamin',
+                                    profile.jenisKelamin == 'L'
+                                        ? 'Laki-laki'
+                                        : profile.jenisKelamin == 'P'
+                                        ? 'Perempuan'
+                                        : profile.jenisKelamin,
+                                  ),
                                   const SizedBox(height: 40),
                                   Row(
                                     mainAxisAlignment:

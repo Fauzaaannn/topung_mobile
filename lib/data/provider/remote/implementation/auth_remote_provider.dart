@@ -22,13 +22,21 @@ class AuthRemoteProvider implements IAuthRemoteProvider {
 
   @override
   Future<void> register({
-    required String name,
+    required String username,
     required String email,
     required String password,
+    required int usia,
+    required String jenisKelamin,
   }) async {
     await _dio.post(
       EndpointConstant.register,
-      data: {'name': name, 'email': email, 'password': password},
+      data: {
+        'username': username,
+        'email': email,
+        'password': password,
+        'usia': usia,
+        'jenisKelamin': jenisKelamin,
+      },
     );
   }
 }

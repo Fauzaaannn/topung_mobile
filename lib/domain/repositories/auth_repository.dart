@@ -8,8 +8,10 @@ abstract class AuthRepository {
   });
 
   Future<Either<String, void>> register({
-    required String name,
+    required String username,
     required String email,
     required String password,
+    required int usia,
+    required String jenisKelamin,
   });
 }

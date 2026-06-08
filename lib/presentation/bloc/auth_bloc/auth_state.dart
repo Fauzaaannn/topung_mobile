@@ -12,6 +12,8 @@ class LoginSuccess extends AuthState {
   final String role;
 }
 
+class RegisterSuccess extends AuthState {}
+
 class LogoutSuccess extends AuthState {}
 
 class AuthFailure extends AuthState {

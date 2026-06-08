@@ -7,8 +7,10 @@ abstract class IAuthRemoteProvider {
   });
 
   Future<void> register({
-    required String name,
+    required String username,
     required String email,
     required String password,
+    required int usia,
+    required String jenisKelamin,
   });
 }
