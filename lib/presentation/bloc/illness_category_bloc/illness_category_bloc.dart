@@ -19,7 +19,19 @@ class IllnessCategoryBloc
     IllnessCategoryFetched event,
     Emitter<IllnessCategoryState> emit,
   ) async {
-    emit(IllnessCategoryLoading());
+    if (state is IllnessCategorySuccess) {
+      final currentState = state as IllnessCategorySuccess;
+      if (currentState.hasReachedMax && event.page != 1) return;
+      
+      if (event.page == 1) {
+        emit(IllnessCategoryLoading());
+      } else {
+        if (currentState.isFetchingMore) return;
+        emit(currentState.copyWith(isFetchingMore: true));
+      }
+    } else {
+      emit(IllnessCategoryLoading());
+    }
 
     final result = await _illnessCategoryUsecase(
       page: event.page,
@@ -28,8 +40,35 @@ class IllnessCategoryBloc
     );
 
     result.fold(
-      (failure) => emit(IllnessCategoryFailure(message: failure)),
-      (data) => emit(IllnessCategorySuccess(data: data)),
+      (failure) {
+        if (state is IllnessCategorySuccess) {
+           final currentState = state as IllnessCategorySuccess;
+           emit(currentState.copyWith(isFetchingMore: false));
+        } else {
+           emit(IllnessCategoryFailure(message: failure));
+        }
+      },
+      (data) {
+        if (state is IllnessCategorySuccess && event.page > 1) {
+          final currentState = state as IllnessCategorySuccess;
+          final newItems = List<IllnessCategoryModel>.from(currentState.data.items)..addAll(data.items);
+          final newData = IllnessCategoryPaginationModel(
+            items: newItems,
+            pagination: data.pagination,
+          );
+          emit(IllnessCategorySuccess(
+            data: newData,
+            hasReachedMax: data.items.isEmpty || data.pagination.page >= data.pagination.totalPages,
+            isFetchingMore: false,
+          ));
+        } else {
+          emit(IllnessCategorySuccess(
+            data: data,
+            hasReachedMax: data.items.isEmpty || data.pagination.page >= data.pagination.totalPages,
+            isFetchingMore: false,
+          ));
+        }
+      },
     );
   }
 }

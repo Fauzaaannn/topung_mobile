@@ -24,8 +24,46 @@ class IllnessCategoryPage extends StatelessWidget {
   }
 }
 
-class _IllnessCategoryView extends StatelessWidget {
+class _IllnessCategoryView extends StatefulWidget {
   const _IllnessCategoryView();
+
+  @override
+  State<_IllnessCategoryView> createState() => _IllnessCategoryViewState();
+}
+
+class _IllnessCategoryViewState extends State<_IllnessCategoryView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isBottom) {
+      final state = context.read<IllnessCategoryBloc>().state;
+      if (state is IllnessCategorySuccess && !state.hasReachedMax && !state.isFetchingMore) {
+        final nextPage = state.data.pagination.page + 1;
+        context.read<IllnessCategoryBloc>().add(
+          IllnessCategoryFetched(page: nextPage),
+        );
+      }
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,11 +126,20 @@ class _IllnessCategoryView extends StatelessWidget {
                 return a.id.compareTo(b.id);
               });
             return ListView.separated(
+              controller: _scrollController,
               padding: const EdgeInsets.all(16),
-              itemCount: items.length,
+              itemCount: items.length + (state.isFetchingMore ? 1 : 0),
               separatorBuilder: (_, __) =>
                   Divider(color: ColorConstant.greyLight, height: 1),
               itemBuilder: (context, index) {
+                if (index >= items.length) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
                 final category = items[index];
                 return IllnessCategoryCard(
                   title: category.name,
