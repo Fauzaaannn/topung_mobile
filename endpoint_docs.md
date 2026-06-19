@@ -402,12 +402,17 @@ Semua endpoint ini butuh token admin.
 ```json
 {
   "categoryId": "1",
-  "title": "Materi Admin",
+  "name": "Materi Admin",
   "videoUrl": "https://youtube.com/watch?v=abc",
-  "textContent": "Isi materi",
-  "imageUrl": "https://example.com/materi.png"
+  "description": "Isi materi",
+  "imageUrl": "https://example.com/thumbnail.png",
+  "embedImageUrl": "https://example.com/gambar-rag.png"
 }
 ```
+
+> **Catatan field gambar:**
+> - `imageUrl` = gambar **thumbnail** yang ditampilkan di UI (list/detail materi). **Wajib** saat create.
+> - `embedImageUrl` = gambar yang di-embed ke **konteks chatbot RAG** (disimpan di `chatbot_knowledge.metadata`). **Opsional**. Jika tidak diisi, chatbot tidak akan menampilkan gambar dari materi ini.
 
 - `PUT /admin/materials/:id`
   - Auth: `Bearer admin`
@@ -415,12 +420,19 @@ Semua endpoint ini butuh token admin.
 ```json
 {
   "categoryId": "1",
-  "title": "Materi Admin Update",
+  "name": "Materi Admin Update",
   "videoUrl": "https://youtube.com/watch?v=def",
-  "textContent": "Isi update",
-  "imageUrl": "https://example.com/materi-update.png"
+  "description": "Isi update",
+  "imageUrl": "https://example.com/thumbnail-update.png",
+  "embedImageUrl": "https://example.com/gambar-rag-update.png"
 }
 ```
+
+> **Catatan update field gambar:**
+> - `imageUrl` = update thumbnail UI. Jika tidak disertakan, nilai lama dipertahankan.
+> - `embedImageUrl` = update gambar RAG. Jika tidak disertakan, nilai lama dipertahankan.
+> - Keduanya **opsional** saat update — field yang tidak disertakan tidak akan diubah.
+> - Materi yang sudah ada di database **tidak terpengaruh** dan tidak perlu di-re-embed ulang secara manual, karena setiap kali `PUT /admin/materials/:id` dipanggil, sistem otomatis menjalankan ulang knowledge sync dengan nilai terbaru.
 
 - `DELETE /admin/materials/:id`
   - Auth: `Bearer admin`

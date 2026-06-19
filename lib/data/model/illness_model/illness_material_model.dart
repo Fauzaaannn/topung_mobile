@@ -22,6 +22,7 @@ class IllnessMaterialModel extends Equatable {
     required this.videoUrl,
     required this.textContent,
     required this.imageUrl,
+    this.embedImageUrl,
     required this.createdAt,
     required this.updatedAt,
     required this.myInteractions,
@@ -34,6 +35,7 @@ class IllnessMaterialModel extends Equatable {
   final String videoUrl;
   final String textContent;
   final String imageUrl;
+  final String? embedImageUrl;
   final String createdAt;
   final String updatedAt;
   final List<MaterialInteractionModel> myInteractions;
@@ -48,6 +50,7 @@ class IllnessMaterialModel extends Equatable {
       videoUrl: data['videoUrl'] as String,
       textContent: data['textContent'] as String,
       imageUrl: data['imageUrl'] as String,
+      embedImageUrl: data['embedImageUrl'] as String?,
       createdAt: data['createdAt'] as String,
       updatedAt: data['updatedAt'] as String,
       myInteractions: (data['myInteractions'] as List<dynamic>)
@@ -65,6 +68,7 @@ class IllnessMaterialModel extends Equatable {
     videoUrl,
     textContent,
     imageUrl,
+    embedImageUrl,
     createdAt,
     updatedAt,
     myInteractions,

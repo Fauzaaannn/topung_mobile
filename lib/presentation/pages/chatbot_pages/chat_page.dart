@@ -1,4 +1,8 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -128,6 +132,93 @@ class _ChatPageState extends State<ChatPage> {
     });
   }
 
+  void _handleError(String rawError) {
+    String displayError =
+        "Terjadi kesalahan saat memproses permintaan Anda. Silakan coba lagi.";
+    if (rawError.contains("503") ||
+        rawError.contains("Service Unavailable") ||
+        rawError.contains("high demand")) {
+      displayError =
+          "Layanan AI sedang sibuk karena tingginya permintaan. Silakan coba beberapa saat lagi.";
+    } else if (rawError.toLowerCase().contains("timeout") ||
+        rawError.toLowerCase().contains("deadline")) {
+      displayError =
+          "Koneksi terputus atau waktu tunggu habis. Pastikan koneksi internet Anda stabil.";
+    } else if (rawError.contains("SocketException")) {
+      displayError =
+          "Tidak ada koneksi internet. Silakan periksa jaringan Anda.";
+    }
+
+    String failedQuestion = "";
+    setState(() {
+      if (_messages.isNotEmpty && _messages.last.role == _MessageRole.user) {
+        failedQuestion = _messages.last.text;
+        _messages.removeLast();
+      }
+    });
+
+    if (failedQuestion.isNotEmpty) {
+      _messageController.text = failedQuestion;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.red),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  "Gagal Mengirim",
+                  style: TextStyle(
+                    fontWeight: FontConstant.bold,
+                    fontSize: FontConstant.fontSize16,
+                    fontFamily: FontConstant.robotoFontFamily,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            displayError,
+            style: TextStyle(
+              fontSize: FontConstant.fontSize14,
+              fontFamily: FontConstant.robotoFontFamily,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Batal", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorConstant.primary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (failedQuestion.isNotEmpty) {
+                  _sendMessage();
+                }
+              },
+              child: const Text("Coba Lagi",
+                  style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _sendMessage() {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
@@ -187,15 +278,7 @@ class _ChatPageState extends State<ChatPage> {
                 });
                 _scrollToBottom();
               } else if (state is ChatbotError) {
-                setState(() {
-                  _messages.add(
-                    _ChatMessage(
-                      text: 'Maaf, terjadi kesalahan: ${state.message}',
-                      role: _MessageRole.ai,
-                    ),
-                  );
-                });
-                _scrollToBottom();
+                _handleError(state.message);
               }
             },
           ),
@@ -446,7 +529,7 @@ class _ChatPageState extends State<ChatPage> {
               width: 1,
             ),
           ),
-          child: _buildTypingIndicator(),
+          child: const _ThinkingIndicator(),
         ),
       ),
     );
@@ -468,23 +551,53 @@ class _ChatPageState extends State<ChatPage> {
               ...message.images!.map(
                 (img) => Padding(
                   padding: const EdgeInsets.only(bottom: 12.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.network(
-                      img.imageUrl,
-                      width: double.infinity,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: double.infinity,
-                        height: 150,
-                        color: ColorConstant.greyLight,
-                        child: const Icon(
-                          Icons.image_rounded,
-                          color: ColorConstant.grey,
-                          size: 40,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: CachedNetworkImage(
+                          imageUrl: img.imageUrl,
+                          width: double.infinity,
+                          fit: BoxFit.contain,
+                          memCacheWidth: 400,
+                          errorWidget: (context, url, error) => Container(
+                            width: double.infinity,
+                            height: 150,
+                            color: ColorConstant.greyLight,
+                            child: const Icon(
+                              Icons.image_rounded,
+                              color: ColorConstant.grey,
+                              size: 40,
+                            ),
+                          ),
+                          placeholder: (context, url) => Container(
+                            width: double.infinity,
+                            height: 150,
+                            color: ColorConstant.greyLight,
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: ColorConstant.primary,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                      if (img.imageCaption != null &&
+                          img.imageCaption!.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          img.imageCaption!,
+                          style: TextStyle(
+                            fontSize: FontConstant.fontSize12,
+                            color: ColorConstant.greyDark,
+                            fontStyle: FontStyle.italic,
+                            fontFamily: FontConstant.robotoFontFamily,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
@@ -585,30 +698,6 @@ class _ChatPageState extends State<ChatPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildTypingIndicator() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(3, (index) {
-        return TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0, end: 1),
-          duration: Duration(milliseconds: 400 + (index * 150)),
-          curve: Curves.easeInOut,
-          builder: (context, value, child) {
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                color: ColorConstant.primary.withOpacity(0.3 + (value * 0.7)),
-                shape: BoxShape.circle,
-              ),
-            );
-          },
-        );
-      }),
     );
   }
 
@@ -770,6 +859,99 @@ class _ChatPageState extends State<ChatPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ThinkingIndicator extends StatefulWidget {
+  const _ThinkingIndicator();
+
+  @override
+  State<_ThinkingIndicator> createState() => _ThinkingIndicatorState();
+}
+
+class _ThinkingIndicatorState extends State<_ThinkingIndicator>
+    with TickerProviderStateMixin {
+  final List<String> _thinkingTexts = [
+    "Mendeteksi gejala yang ditanyakan...",
+    "Menemukan kondisi terkait...",
+    "Mencari materi dari penyakit...",
+    "Menyusun jawaban...",
+  ];
+
+  int _currentTextIndex = 0;
+  late Timer _timer;
+  late AnimationController _dotController;
+
+  @override
+  void initState() {
+    super.initState();
+    _dotController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+
+    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentTextIndex = (_currentTextIndex + 1) % _thinkingTexts.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    _dotController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (index) {
+            return AnimatedBuilder(
+              animation: _dotController,
+              builder: (context, child) {
+                double offset = index * 0.2;
+                double value = (_dotController.value + offset) % 1.0;
+                double opacity =
+                    0.3 + (math.sin(value * math.pi * 2) + 1) / 2 * 0.7;
+
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: ColorConstant.primary
+                        .withOpacity(opacity.clamp(0.3, 1.0)),
+                    shape: BoxShape.circle,
+                  ),
+                );
+              },
+            );
+          }),
+        ),
+        const SizedBox(width: 8),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: Text(
+            _thinkingTexts[_currentTextIndex],
+            key: ValueKey<int>(_currentTextIndex),
+            style: TextStyle(
+              fontSize: FontConstant.fontSize12,
+              color: ColorConstant.greyDark,
+              fontStyle: FontStyle.italic,
+              fontFamily: FontConstant.robotoFontFamily,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

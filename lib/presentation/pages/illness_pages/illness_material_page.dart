@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
@@ -128,6 +129,22 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
   YoutubePlayerController? _youtubeController;
   bool _isLiked = false;
   bool _isDisliked = false;
+  double _aspectRatio = 16 / 9;
+
+  String? _extractVideoId(String url) {
+    try {
+      final regExp = RegExp(
+        r'.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\/shorts\/)([^#\&\?]*).*',
+      );
+      final match = regExp.firstMatch(url);
+      if (match != null && match.groupCount >= 1) {
+        return match.group(1);
+      }
+    } catch (e) {
+      return null;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -139,18 +156,16 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
       (i) => i.interactionType == 'dislike',
     );
 
-    final videoId = YoutubePlayer.convertUrlToId(widget.data.videoUrl);
-    if (videoId != null) {
+    final videoId = _extractVideoId(widget.data.videoUrl);
+    if (videoId != null && videoId.isNotEmpty) {
       _youtubeController = YoutubePlayerController(
         initialVideoId: videoId,
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
-          mute: false,
-          enableCaption: false,
-        ),
+        flags: const YoutubePlayerFlags(autoPlay: false, mute: false),
       );
     }
   }
+
+
 
   @override
   void dispose() {
@@ -174,7 +189,6 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(state.message)));
-          // Optional: revert local state if needed
         }
       },
       child: _buildBody(context),
@@ -184,14 +198,23 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
   Widget _buildBody(BuildContext context) {
     if (_youtubeController != null) {
       return YoutubePlayerBuilder(
+        onExitFullScreen: () {
+          SystemChrome.setEnabledSystemUIMode(
+            SystemUiMode.manual,
+            overlays: SystemUiOverlay.values,
+          );
+          SystemChrome.setSystemUIOverlayStyle(
+            const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
+            ),
+          );
+        },
         player: YoutubePlayer(
           controller: _youtubeController!,
+          aspectRatio: _aspectRatio,
           showVideoProgressIndicator: true,
           progressIndicatorColor: ColorConstant.primary,
-          progressColors: ProgressBarColors(
-            playedColor: ColorConstant.primary,
-            handleColor: ColorConstant.primaryMedium3,
-          ),
         ),
         builder: (context, player) {
           return Scaffold(
@@ -213,19 +236,21 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
                 ),
               ),
             ),
-            body: Column(
-              children: [
-                player,
-                Expanded(
-                  child: SingleChildScrollView(
+            body: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  player,
+                  Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildTitleRow(),
                         Divider(color: ColorConstant.greyLight, height: 32),
-                        if (widget.data.imageUrl.isNotEmpty) ...[
-                          _buildImage(),
+                        if (widget.data.embedImageUrl != null &&
+                            widget.data.embedImageUrl!.isNotEmpty) ...[
+                          _buildImage(widget.data.embedImageUrl!),
                           const SizedBox(height: 16),
                         ],
                         _buildContent(),
@@ -233,8 +258,8 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
                       ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -260,19 +285,21 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          _buildVideoSection(),
-          Expanded(
-            child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildVideoSection(),
+            Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildTitleRow(),
                   Divider(color: ColorConstant.greyLight, height: 32),
-                  if (widget.data.imageUrl.isNotEmpty) ...[
-                    _buildImage(),
+                  if (widget.data.embedImageUrl != null &&
+                      widget.data.embedImageUrl!.isNotEmpty) ...[
+                    _buildImage(widget.data.embedImageUrl!),
                     const SizedBox(height: 16),
                   ],
                   _buildContent(),
@@ -280,8 +307,8 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -396,7 +423,7 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
     );
   }
 
-  Widget _buildImage() {
+  Widget _buildImage(String imageUrl) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -405,7 +432,7 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
       ),
       clipBehavior: Clip.hardEdge,
       child: Image.network(
-        widget.data.imageUrl,
+        imageUrl,
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => Container(
           height: 200,
