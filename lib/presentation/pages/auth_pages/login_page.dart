@@ -89,7 +89,7 @@ class _LoginViewState extends State<_LoginView> {
                 children: [
                   const SizedBox(height: 40),
                   Text(
-                    'Sign In',
+                    'Masuk',
                     style: TextStyle(
                       fontSize: FontConstant.fontSize32,
                       fontWeight: FontConstant.bold,
@@ -130,7 +130,7 @@ class _LoginViewState extends State<_LoginView> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       return CustomButton(
-                        label: 'Continue',
+                        label: 'Lanjutkan',
                         width: double.infinity,
                         onPressed: state is AuthLoading ? () {} : _onContinue,
                       );
@@ -141,7 +141,7 @@ class _LoginViewState extends State<_LoginView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't have an account? ",
+                        "Belum punya akun? ",
                         style: TextStyle(
                           color: ColorConstant.grey,
                           fontSize: FontConstant.fontSize14,
@@ -151,7 +151,7 @@ class _LoginViewState extends State<_LoginView> {
                       GestureDetector(
                         onTap: _onCreateAccount,
                         child: Text(
-                          'Create Account',
+                          'Buat Akun',
                           style: TextStyle(
                             color: ColorConstant.greyDark,
                             fontSize: FontConstant.fontSize14,

@@ -1,3 +1,4 @@
+import 'package:topung_mobile/core/utils/dio_exception_extension.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:topung_mobile/data/model/auth_model/login_response_model.dart';
@@ -23,7 +24,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on DioException catch (e) {
       final message =
           e.response?.data?['message'] as String? ??
-          e.message ??
+          e.indonesianMessage ??
           'Terjadi kesalahan';
       return Left(message);
     } catch (_) {
@@ -51,7 +52,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on DioException catch (e) {
       final message =
           e.response?.data?['message'] as String? ??
-          e.message ??
+          e.indonesianMessage ??
           'Terjadi kesalahan';
       return Left(message);
     } catch (_) {

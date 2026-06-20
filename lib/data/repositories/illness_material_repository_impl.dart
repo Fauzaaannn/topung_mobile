@@ -1,3 +1,4 @@
+import 'package:topung_mobile/core/utils/dio_exception_extension.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:topung_mobile/data/model/illness_model/illness_material_model.dart';
@@ -19,7 +20,7 @@ class IllnessMaterialRepositoryImpl implements IllnessMaterialRepository {
     } on DioException catch (e) {
       final message =
           e.response?.data?['message'] as String? ??
-          e.message ??
+          e.indonesianMessage ??
           'Terjadi kesalahan';
       return Left(message);
     } catch (_) {

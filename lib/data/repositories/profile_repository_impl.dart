@@ -1,3 +1,4 @@
+import 'package:topung_mobile/core/utils/dio_exception_extension.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:topung_mobile/data/model/profile_model/profile_model.dart';
@@ -17,7 +18,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     } on DioException catch (e) {
       final message =
           e.response?.data?['message'] as String? ??
-          e.message ??
+          e.indonesianMessage ??
           'Terjadi kesalahan';
       return Left(message);
     } catch (_) {

@@ -99,7 +99,7 @@ class _RegisterViewState extends State<_RegisterView> {
                 children: [
                   const SizedBox(height: 40),
                   Text(
-                    'Sign Up',
+                    'Daftar',
                     style: TextStyle(
                       fontSize: FontConstant.fontSize32,
                       fontWeight: FontConstant.bold,
@@ -183,7 +183,7 @@ class _RegisterViewState extends State<_RegisterView> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       return CustomButton(
-                        label: 'Continue',
+                        label: 'Lanjutkan',
                         width: double.infinity,
                         onPressed: state is AuthLoading ? () {} : _onContinue,
                       );
@@ -194,7 +194,7 @@ class _RegisterViewState extends State<_RegisterView> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Already have an account? ',
+                        'Sudah punya akun? ',
                         style: TextStyle(
                           color: ColorConstant.grey,
                           fontSize: FontConstant.fontSize14,
@@ -204,7 +204,7 @@ class _RegisterViewState extends State<_RegisterView> {
                       GestureDetector(
                         onTap: () => context.router.pop(),
                         child: Text(
-                          'Sign In',
+                          'Masuk',
                           style: TextStyle(
                             color: ColorConstant.greyDark,
                             fontSize: FontConstant.fontSize14,
