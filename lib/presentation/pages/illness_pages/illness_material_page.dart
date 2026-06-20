@@ -15,6 +15,7 @@ import 'package:topung_mobile/domain/usecases/interaction_usecases/interaction_u
 import 'package:topung_mobile/presentation/widgets/drawer/comment_bottom_sheet.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:topung_mobile/presentation/widgets/image/looping_gif_player.dart';
 
 @RoutePage()
 class IllnessMaterialPage extends StatelessWidget {
@@ -125,7 +126,8 @@ class _IllnessMaterialContent extends StatefulWidget {
       _IllnessMaterialContentState();
 }
 
-class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
+class _IllnessMaterialContentState extends State<_IllnessMaterialContent>
+    with AutomaticKeepAliveClientMixin {
   YoutubePlayerController? _youtubeController;
   bool _isLiked = false;
   bool _isDisliked = false;
@@ -147,6 +149,9 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void initState() {
     super.initState();
     _isLiked = widget.data.myInteractions.any(
@@ -165,8 +170,6 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
     }
   }
 
-
-
   @override
   void dispose() {
     _youtubeController?.dispose();
@@ -183,6 +186,7 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Wajib untuk AutomaticKeepAliveClientMixin
     return BlocListener<InteractionBloc, InteractionState>(
       listener: (context, state) {
         if (state is InteractionActionError) {
@@ -431,45 +435,58 @@ class _IllnessMaterialContentState extends State<_IllnessMaterialContent> {
         borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.hardEdge,
-      child: Image.network(
-        imageUrl,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => Container(
-          height: 200,
-          color: ColorConstant.greyLight,
-          child: Center(
-            child: Icon(
-              Icons.image_not_supported_outlined,
-              color: ColorConstant.grey,
-              size: 40,
+      child: imageUrl.toLowerCase().endsWith('.gif')
+          ? RepaintBoundary(
+              child: LoopingGifPlayer(
+                key: ValueKey(imageUrl), // Memastikan state di-reuse
+                gifUrl: imageUrl,
+                fit: BoxFit.contain,
+              ),
+            )
+          : RepaintBoundary(
+              child: Image.network(
+                imageUrl,
+                key: ValueKey(imageUrl),
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 200,
+                  color: ColorConstant.greyLight,
+                  child: Center(
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      color: ColorConstant.grey,
+                      size: 40,
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 
   Widget _buildContent() {
-    return MarkdownBody(
-      data: widget.data.textContent,
-      styleSheet: MarkdownStyleSheet(
-        p: TextStyle(
-          fontSize: FontConstant.fontSize14,
-          fontWeight: FontConstant.regular,
-          color: ColorConstant.greyDark,
-          fontFamily: FontConstant.robotoFontFamily,
-          height: 1.6,
-        ),
-        strong: TextStyle(
-          fontSize: FontConstant.fontSize14,
-          fontWeight: FontConstant.bold,
-          color: ColorConstant.greyDark,
-          fontFamily: FontConstant.robotoFontFamily,
-          height: 1.6,
-        ),
-        listBullet: TextStyle(
-          fontSize: FontConstant.fontSize14,
-          color: ColorConstant.greyDark,
+    return RepaintBoundary(
+      child: MarkdownBody(
+        data: widget.data.textContent,
+        styleSheet: MarkdownStyleSheet(
+          p: TextStyle(
+            fontSize: FontConstant.fontSize14,
+            fontWeight: FontConstant.regular,
+            color: ColorConstant.greyDark,
+            fontFamily: FontConstant.robotoFontFamily,
+            height: 1.6,
+          ),
+          strong: TextStyle(
+            fontSize: FontConstant.fontSize14,
+            fontWeight: FontConstant.bold,
+            color: ColorConstant.greyDark,
+            fontFamily: FontConstant.robotoFontFamily,
+            height: 1.6,
+          ),
+          listBullet: TextStyle(
+            fontSize: FontConstant.fontSize14,
+            color: ColorConstant.greyDark,
+          ),
         ),
       ),
     );

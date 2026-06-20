@@ -49,12 +49,15 @@ class IllnessTypeCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: imageUrl != null
-                  ? Image.network(
-                      imageUrl!,
-                      width: imageWidth,
-                      height: imageHeight,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholder(),
+                  ? RepaintBoundary(
+                      child: Image.network(
+                        imageUrl!,
+                        key: ValueKey(imageUrl),
+                        width: imageWidth,
+                        height: imageHeight,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _placeholder(),
+                      ),
                     )
                   : _placeholder(),
             ),

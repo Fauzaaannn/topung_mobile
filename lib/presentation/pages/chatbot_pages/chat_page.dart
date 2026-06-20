@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
+import 'package:topung_mobile/presentation/widgets/image/looping_gif_player.dart';
 
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
@@ -556,32 +557,37 @@ class _ChatPageState extends State<ChatPage> {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(16),
-                        child: CachedNetworkImage(
-                          imageUrl: img.imageUrl,
-                          width: double.infinity,
-                          fit: BoxFit.contain,
-                          memCacheWidth: 400,
-                          errorWidget: (context, url, error) => Container(
-                            width: double.infinity,
-                            height: 150,
-                            color: ColorConstant.greyLight,
-                            child: const Icon(
-                              Icons.image_rounded,
-                              color: ColorConstant.grey,
-                              size: 40,
-                            ),
-                          ),
-                          placeholder: (context, url) => Container(
-                            width: double.infinity,
-                            height: 150,
-                            color: ColorConstant.greyLight,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: ColorConstant.primary,
+                        child: img.imageUrl.toLowerCase().endsWith('.gif')
+                            ? LoopingGifPlayer(
+                                gifUrl: img.imageUrl,
+                                fit: BoxFit.contain,
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: img.imageUrl,
+                                width: double.infinity,
+                                fit: BoxFit.contain,
+                                memCacheWidth: 400,
+                                errorWidget: (context, url, error) => Container(
+                                  width: double.infinity,
+                                  height: 150,
+                                  color: ColorConstant.greyLight,
+                                  child: const Icon(
+                                    Icons.image_rounded,
+                                    color: ColorConstant.grey,
+                                    size: 40,
+                                  ),
+                                ),
+                                placeholder: (context, url) => Container(
+                                  width: double.infinity,
+                                  height: 150,
+                                  color: ColorConstant.greyLight,
+                                  child: const Center(
+                                    child: CircularProgressIndicator(
+                                      color: ColorConstant.primary,
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
                       ),
                       if (img.imageCaption != null &&
                           img.imageCaption!.isNotEmpty) ...[
@@ -733,18 +739,21 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                source.imageUrl,
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
+              child: RepaintBoundary(
+                child: Image.network(
+                  source.imageUrl,
+                  key: ValueKey(source.imageUrl),
                   width: 60,
                   height: 60,
-                  color: ColorConstant.greyLight,
-                  child: const Icon(
-                    Icons.image_rounded,
-                    color: ColorConstant.grey,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 60,
+                    height: 60,
+                    color: ColorConstant.greyLight,
+                    child: const Icon(
+                      Icons.image_rounded,
+                      color: ColorConstant.grey,
+                    ),
                   ),
                 ),
               ),
