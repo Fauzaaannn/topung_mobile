@@ -26,6 +26,7 @@ class AppRouter extends RootStackRouter {
       AutoRoute(page: IllnessTypeRoute.page, guards: [authGuard]),
       AutoRoute(page: IllnessMaterialRoute.page, guards: [authGuard]),
       AutoRoute(page: ChatRoute.page, guards: [authGuard]),
+      AutoRoute(page: ServerErrorRoute.page),
     ];
   }
 }

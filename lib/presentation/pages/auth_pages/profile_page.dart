@@ -118,10 +118,12 @@ class ProfilePage extends StatelessWidget {
 
                         if (state is ProfileLoaded) {
                           final profile = state.profile;
-                          return Card(
-                            elevation: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
+                          return Column(
+                            children: [
+                              Card(
+                                elevation: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -170,10 +172,22 @@ class ProfilePage extends StatelessWidget {
                                 ],
                               ),
                             ),
-                          );
-                        }
+                          ),
+                          const SizedBox(height: 40),
+                          Text(
+                            '© 2026 TopungEdu. All rights reserved.',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: FontConstant.fontSize12,
+                              fontFamily: FontConstant.robotoFontFamily,
+                            ),
+                          ),
+                          const SizedBox(height: 100),
+                        ],
+                      );
+                    }
 
-                        return const SizedBox.shrink();
+                    return const SizedBox.shrink();
                       },
                     ),
                   ),

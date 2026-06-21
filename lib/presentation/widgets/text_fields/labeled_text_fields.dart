@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/app_theme/color_constant.dart';
 import '../../../core/app_theme/font_constant.dart';
 
@@ -13,6 +14,7 @@ class LabeledTextField extends StatefulWidget {
   final String? Function(String?)? validator;
   final bool obscureText;
   final int maxLines;
+  final List<TextInputFormatter>? inputFormatters;
 
   const LabeledTextField({
     Key? key,
@@ -26,6 +28,7 @@ class LabeledTextField extends StatefulWidget {
     this.validator,
     this.obscureText = false,
     this.maxLines = 1,
+    this.inputFormatters,
   }) : super(key: key);
 
   @override
@@ -61,6 +64,7 @@ class _LabeledTextFieldState extends State<LabeledTextField> {
           keyboardType: widget.textFieldType,
           obscureText: _obscureText,
           maxLines: _obscureText ? 1 : widget.maxLines,
+          inputFormatters: widget.inputFormatters,
           onChanged: widget.onChanged,
           validator: widget.validator,
           decoration: InputDecoration(

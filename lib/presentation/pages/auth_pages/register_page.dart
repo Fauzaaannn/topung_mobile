@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:topung_mobile/core/app_theme/color_constant.dart';
 import 'package:topung_mobile/core/app_theme/font_constant.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -109,8 +110,8 @@ class _RegisterViewState extends State<_RegisterView> {
                   ),
                   const SizedBox(height: 32),
                   LabeledTextField(
-                    label: 'Username',
-                    placeholder: 'Masukkan Username',
+                    label: 'Nama',
+                    placeholder: 'Masukkan Nama',
                     controller: _nameController,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -154,6 +155,7 @@ class _RegisterViewState extends State<_RegisterView> {
                     placeholder: 'Masukkan usia',
                     controller: _ageController,
                     textFieldType: TextInputType.number,
+                    inputFormatters: [LengthLimitingTextInputFormatter(3)],
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Usia wajib diisi';
@@ -197,7 +199,7 @@ class _RegisterViewState extends State<_RegisterView> {
                         'Sudah punya akun? ',
                         style: TextStyle(
                           color: ColorConstant.grey,
-                          fontSize: FontConstant.fontSize14,
+                          fontSize: FontConstant.fontSize16,
                           fontFamily: FontConstant.robotoFontFamily,
                         ),
                       ),
@@ -207,9 +209,10 @@ class _RegisterViewState extends State<_RegisterView> {
                           'Masuk',
                           style: TextStyle(
                             color: ColorConstant.greyDark,
-                            fontSize: FontConstant.fontSize14,
+                            fontSize: FontConstant.fontSize16,
                             fontWeight: FontConstant.semiBold,
                             fontFamily: FontConstant.robotoFontFamily,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),

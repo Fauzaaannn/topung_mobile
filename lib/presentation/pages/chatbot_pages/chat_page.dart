@@ -167,8 +167,9 @@ class _ChatPageState extends State<ChatPage> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               const Icon(Icons.error_outline_rounded, color: Colors.red),
@@ -203,7 +204,8 @@ class _ChatPageState extends State<ChatPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorConstant.primary,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -211,8 +213,10 @@ class _ChatPageState extends State<ChatPage> {
                   _sendMessage();
                 }
               },
-              child: const Text("Coba Lagi",
-                  style: TextStyle(color: Colors.white)),
+              child: const Text(
+                "Coba Lagi",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -452,7 +456,7 @@ class _ChatPageState extends State<ChatPage> {
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 100),
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
                 itemCount: _messages.length + (isLoading ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == _messages.length) {
@@ -466,10 +470,57 @@ class _ChatPageState extends State<ChatPage> {
                 },
               ),
             ),
+            if (_messages.length == 1 &&
+                _messages.first.role == _MessageRole.ai &&
+                !isLoading)
+              _buildRecommendations(),
             _buildFloatingInputBar(isLoading),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildRecommendations() {
+    final recommendations = [
+      "Kondisi darurat: Sesak napas",
+      "Kondisi darurat: Varises",
+      "Kondisi darurat: Pingsan",
+      "Kondisi darurat: Hipotermia",
+    ];
+
+    return Container(
+      padding: const EdgeInsets.only(left: 16, bottom: 12),
+      height: 45,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: recommendations.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ActionChip(
+              backgroundColor: ColorConstant.white,
+              side: const BorderSide(color: ColorConstant.primary, width: 1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              label: Text(
+                recommendations[index],
+                style: TextStyle(
+                  fontSize: FontConstant.fontSize12,
+                  color: ColorConstant.primary,
+                  fontWeight: FontConstant.medium,
+                  fontFamily: FontConstant.robotoFontFamily,
+                ),
+              ),
+              onPressed: () {
+                _messageController.text = recommendations[index];
+                _sendMessage();
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -937,8 +988,9 @@ class _ThinkingIndicatorState extends State<_ThinkingIndicator>
                   width: 6,
                   height: 6,
                   decoration: BoxDecoration(
-                    color: ColorConstant.primary
-                        .withOpacity(opacity.clamp(0.3, 1.0)),
+                    color: ColorConstant.primary.withOpacity(
+                      opacity.clamp(0.3, 1.0),
+                    ),
                     shape: BoxShape.circle,
                   ),
                 );

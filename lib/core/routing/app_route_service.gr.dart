@@ -9,8 +9,8 @@
 // coverage:ignore-file
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:auto_route/auto_route.dart' as _i11;
-import 'package:flutter/material.dart' as _i12;
+import 'package:auto_route/auto_route.dart' as _i12;
+import 'package:flutter/material.dart' as _i13;
 import 'package:topung_mobile/presentation/pages/auth_pages/login_page.dart'
     as _i6;
 import 'package:topung_mobile/presentation/pages/auth_pages/profile_page.dart'
@@ -21,6 +21,8 @@ import 'package:topung_mobile/presentation/pages/chatbot_pages/chat_history_page
     as _i1;
 import 'package:topung_mobile/presentation/pages/chatbot_pages/chat_page.dart'
     as _i2;
+import 'package:topung_mobile/presentation/pages/error_pages/server_error_page.dart'
+    as _i10;
 import 'package:topung_mobile/presentation/pages/illness_pages/illness_category_page.dart'
     as _i3;
 import 'package:topung_mobile/presentation/pages/illness_pages/illness_material_page.dart'
@@ -30,17 +32,17 @@ import 'package:topung_mobile/presentation/pages/illness_pages/illness_type_page
 import 'package:topung_mobile/presentation/pages/navbar/navbar_page.dart'
     as _i7;
 import 'package:topung_mobile/presentation/pages/splash_screen/splash_page.dart'
-    as _i10;
+    as _i11;
 
 /// generated route for
 /// [_i1.ChatHistoryPage]
-class ChatHistoryRoute extends _i11.PageRouteInfo<void> {
-  const ChatHistoryRoute({List<_i11.PageRouteInfo>? children})
+class ChatHistoryRoute extends _i12.PageRouteInfo<void> {
+  const ChatHistoryRoute({List<_i12.PageRouteInfo>? children})
     : super(ChatHistoryRoute.name, initialChildren: children);
 
   static const String name = 'ChatHistoryRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       return const _i1.ChatHistoryPage();
@@ -50,8 +52,8 @@ class ChatHistoryRoute extends _i11.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i2.ChatPage]
-class ChatRoute extends _i11.PageRouteInfo<ChatRouteArgs> {
-  ChatRoute({_i12.Key? key, String? chatId, List<_i11.PageRouteInfo>? children})
+class ChatRoute extends _i12.PageRouteInfo<ChatRouteArgs> {
+  ChatRoute({_i13.Key? key, String? chatId, List<_i12.PageRouteInfo>? children})
     : super(
         ChatRoute.name,
         args: ChatRouteArgs(key: key, chatId: chatId),
@@ -60,7 +62,7 @@ class ChatRoute extends _i11.PageRouteInfo<ChatRouteArgs> {
 
   static const String name = 'ChatRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<ChatRouteArgs>(
@@ -74,7 +76,7 @@ class ChatRoute extends _i11.PageRouteInfo<ChatRouteArgs> {
 class ChatRouteArgs {
   const ChatRouteArgs({this.key, this.chatId});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   final String? chatId;
 
@@ -96,13 +98,13 @@ class ChatRouteArgs {
 
 /// generated route for
 /// [_i3.IllnessCategoryPage]
-class IllnessCategoryRoute extends _i11.PageRouteInfo<void> {
-  const IllnessCategoryRoute({List<_i11.PageRouteInfo>? children})
+class IllnessCategoryRoute extends _i12.PageRouteInfo<void> {
+  const IllnessCategoryRoute({List<_i12.PageRouteInfo>? children})
     : super(IllnessCategoryRoute.name, initialChildren: children);
 
   static const String name = 'IllnessCategoryRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       return const _i3.IllnessCategoryPage();
@@ -113,11 +115,11 @@ class IllnessCategoryRoute extends _i11.PageRouteInfo<void> {
 /// generated route for
 /// [_i4.IllnessMaterialPage]
 class IllnessMaterialRoute
-    extends _i11.PageRouteInfo<IllnessMaterialRouteArgs> {
+    extends _i12.PageRouteInfo<IllnessMaterialRouteArgs> {
   IllnessMaterialRoute({
-    _i12.Key? key,
+    _i13.Key? key,
     required String materialId,
-    List<_i11.PageRouteInfo>? children,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
          IllnessMaterialRoute.name,
          args: IllnessMaterialRouteArgs(key: key, materialId: materialId),
@@ -126,7 +128,7 @@ class IllnessMaterialRoute
 
   static const String name = 'IllnessMaterialRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<IllnessMaterialRouteArgs>();
@@ -141,7 +143,7 @@ class IllnessMaterialRoute
 class IllnessMaterialRouteArgs {
   const IllnessMaterialRouteArgs({this.key, required this.materialId});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   final String materialId;
 
@@ -163,12 +165,12 @@ class IllnessMaterialRouteArgs {
 
 /// generated route for
 /// [_i5.IllnessTypePage]
-class IllnessTypeRoute extends _i11.PageRouteInfo<IllnessTypeRouteArgs> {
+class IllnessTypeRoute extends _i12.PageRouteInfo<IllnessTypeRouteArgs> {
   IllnessTypeRoute({
-    _i12.Key? key,
+    _i13.Key? key,
     required String categoryId,
     required String categoryTitle,
-    List<_i11.PageRouteInfo>? children,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
          IllnessTypeRoute.name,
          args: IllnessTypeRouteArgs(
@@ -181,7 +183,7 @@ class IllnessTypeRoute extends _i11.PageRouteInfo<IllnessTypeRouteArgs> {
 
   static const String name = 'IllnessTypeRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<IllnessTypeRouteArgs>();
@@ -201,7 +203,7 @@ class IllnessTypeRouteArgs {
     required this.categoryTitle,
   });
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   final String categoryId;
 
@@ -228,13 +230,13 @@ class IllnessTypeRouteArgs {
 
 /// generated route for
 /// [_i6.LoginPage]
-class LoginRoute extends _i11.PageRouteInfo<void> {
-  const LoginRoute({List<_i11.PageRouteInfo>? children})
+class LoginRoute extends _i12.PageRouteInfo<void> {
+  const LoginRoute({List<_i12.PageRouteInfo>? children})
     : super(LoginRoute.name, initialChildren: children);
 
   static const String name = 'LoginRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       return const _i6.LoginPage();
@@ -244,13 +246,13 @@ class LoginRoute extends _i11.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i7.NavbarPage]
-class NavbarRoute extends _i11.PageRouteInfo<void> {
-  const NavbarRoute({List<_i11.PageRouteInfo>? children})
+class NavbarRoute extends _i12.PageRouteInfo<void> {
+  const NavbarRoute({List<_i12.PageRouteInfo>? children})
     : super(NavbarRoute.name, initialChildren: children);
 
   static const String name = 'NavbarRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       return const _i7.NavbarPage();
@@ -260,13 +262,13 @@ class NavbarRoute extends _i11.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i8.ProfilePage]
-class ProfileRoute extends _i11.PageRouteInfo<void> {
-  const ProfileRoute({List<_i11.PageRouteInfo>? children})
+class ProfileRoute extends _i12.PageRouteInfo<void> {
+  const ProfileRoute({List<_i12.PageRouteInfo>? children})
     : super(ProfileRoute.name, initialChildren: children);
 
   static const String name = 'ProfileRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       return const _i8.ProfilePage();
@@ -276,13 +278,13 @@ class ProfileRoute extends _i11.PageRouteInfo<void> {
 
 /// generated route for
 /// [_i9.RegisterPage]
-class RegisterRoute extends _i11.PageRouteInfo<void> {
-  const RegisterRoute({List<_i11.PageRouteInfo>? children})
+class RegisterRoute extends _i12.PageRouteInfo<void> {
+  const RegisterRoute({List<_i12.PageRouteInfo>? children})
     : super(RegisterRoute.name, initialChildren: children);
 
   static const String name = 'RegisterRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       return const _i9.RegisterPage();
@@ -291,12 +293,28 @@ class RegisterRoute extends _i11.PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [_i10.SplashPage]
-class SplashRoute extends _i11.PageRouteInfo<SplashRouteArgs> {
+/// [_i10.ServerErrorPage]
+class ServerErrorRoute extends _i12.PageRouteInfo<void> {
+  const ServerErrorRoute({List<_i12.PageRouteInfo>? children})
+    : super(ServerErrorRoute.name, initialChildren: children);
+
+  static const String name = 'ServerErrorRoute';
+
+  static _i12.PageInfo page = _i12.PageInfo(
+    name,
+    builder: (data) {
+      return const _i10.ServerErrorPage();
+    },
+  );
+}
+
+/// generated route for
+/// [_i11.SplashPage]
+class SplashRoute extends _i12.PageRouteInfo<SplashRouteArgs> {
   SplashRoute({
-    _i12.Key? key,
+    _i13.Key? key,
     bool fromLogin = false,
-    List<_i11.PageRouteInfo>? children,
+    List<_i12.PageRouteInfo>? children,
   }) : super(
          SplashRoute.name,
          args: SplashRouteArgs(key: key, fromLogin: fromLogin),
@@ -305,13 +323,13 @@ class SplashRoute extends _i11.PageRouteInfo<SplashRouteArgs> {
 
   static const String name = 'SplashRoute';
 
-  static _i11.PageInfo page = _i11.PageInfo(
+  static _i12.PageInfo page = _i12.PageInfo(
     name,
     builder: (data) {
       final args = data.argsAs<SplashRouteArgs>(
         orElse: () => const SplashRouteArgs(),
       );
-      return _i10.SplashPage(key: args.key, fromLogin: args.fromLogin);
+      return _i11.SplashPage(key: args.key, fromLogin: args.fromLogin);
     },
   );
 }
@@ -319,7 +337,7 @@ class SplashRoute extends _i11.PageRouteInfo<SplashRouteArgs> {
 class SplashRouteArgs {
   const SplashRouteArgs({this.key, this.fromLogin = false});
 
-  final _i12.Key? key;
+  final _i13.Key? key;
 
   final bool fromLogin;
 

@@ -38,7 +38,12 @@ class ApiInterceptor extends Interceptor {
     if (err.response?.statusCode == 401) {
       await _secureStorageService.deleteAll();
       serviceLocator<AppRouter>().replaceAll([const LoginRoute()]);
+    } else if (err.response?.statusCode != null && err.response!.statusCode! >= 500) {
+      serviceLocator<AppRouter>().replaceAll([const ServerErrorRoute()]);
     }
+    // We removed global interception of connectionError/connectionTimeout 
+    // because it causes the app to crash to the error page on transient network issues 
+    // or HTTP keep-alive connection drops.
 
     return handler.next(err);
   }

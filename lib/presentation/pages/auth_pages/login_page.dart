@@ -130,7 +130,7 @@ class _LoginViewState extends State<_LoginView> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       return CustomButton(
-                        label: 'Lanjutkan',
+                        label: 'Masuk',
                         width: double.infinity,
                         onPressed: state is AuthLoading ? () {} : _onContinue,
                       );
@@ -144,24 +144,35 @@ class _LoginViewState extends State<_LoginView> {
                         "Belum punya akun? ",
                         style: TextStyle(
                           color: ColorConstant.grey,
-                          fontSize: FontConstant.fontSize14,
+                          fontSize: FontConstant.fontSize16,
                           fontFamily: FontConstant.robotoFontFamily,
                         ),
                       ),
                       GestureDetector(
                         onTap: _onCreateAccount,
                         child: Text(
-                          'Buat Akun',
+                          'Daftar Akun',
                           style: TextStyle(
                             color: ColorConstant.greyDark,
-                            fontSize: FontConstant.fontSize14,
+                            fontSize: FontConstant.fontSize16,
                             fontWeight: FontConstant.semiBold,
                             fontFamily: FontConstant.robotoFontFamily,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 40),
+                  Text(
+                    '© 2026 TopungEdu. All rights reserved.',
+                    style: TextStyle(
+                      color: ColorConstant.grey,
+                      fontSize: FontConstant.fontSize12,
+                      fontFamily: FontConstant.robotoFontFamily,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
