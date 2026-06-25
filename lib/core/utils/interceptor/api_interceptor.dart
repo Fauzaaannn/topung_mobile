@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:topung_mobile/core/constant/endpoint_constant.dart';
 import 'package:topung_mobile/core/modules/app_module.dart';
 import 'package:topung_mobile/core/routing/app_route_service.dart';
 import 'package:topung_mobile/core/routing/app_route_service.gr.dart';
@@ -39,7 +40,9 @@ class ApiInterceptor extends Interceptor {
       await _secureStorageService.deleteAll();
       serviceLocator<AppRouter>().replaceAll([const LoginRoute()]);
     } else if (err.response?.statusCode != null && err.response!.statusCode! >= 500) {
-      serviceLocator<AppRouter>().replaceAll([const ServerErrorRoute()]);
+      if (!err.requestOptions.path.contains(EndpointConstant.chatbotAsk)) {
+        serviceLocator<AppRouter>().replaceAll([const ServerErrorRoute()]);
+      }
     }
     // We removed global interception of connectionError/connectionTimeout 
     // because it causes the app to crash to the error page on transient network issues 
