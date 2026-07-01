@@ -71,7 +71,8 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage>
+    with SingleTickerProviderStateMixin {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
@@ -84,9 +85,44 @@ class _ChatPageState extends State<ChatPage> {
   List<_ChatMessage> _messages = [];
   String? _currentConversationId;
 
+  late AnimationController _bannerAnimController;
+  late Animation<Offset> _bannerOffsetAnim;
+  late Animation<double> _sizeAnim;
+
   @override
   void initState() {
     super.initState();
+
+    _bannerAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _bannerOffsetAnim =
+        Tween<Offset>(
+          begin: const Offset(0, -1.0),
+          end: const Offset(0, 0.0),
+        ).animate(
+          CurvedAnimation(
+            parent: _bannerAnimController,
+            curve: const Interval(0.0, 0.6, curve: Curves.easeOutCubic),
+          ),
+        );
+    _sizeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _bannerAnimController,
+        curve: const Interval(0.4, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        _bannerAnimController.forward();
+        Future.delayed(const Duration(seconds: 4), () {
+          if (mounted) _bannerAnimController.reverse();
+        });
+      }
+    });
+
     _chatbotBloc = ChatbotBloc(GetIt.instance<ChatbotUsecase>());
 
     if (widget.chatId != null && widget.chatId!.isNotEmpty) {
@@ -113,6 +149,7 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   void dispose() {
+    _bannerAnimController.dispose();
     _messageController.dispose();
     _scrollController.dispose();
     _focusNode.dispose();
@@ -358,6 +395,64 @@ class _ChatPageState extends State<ChatPage> {
                       },
                     )
                   : _buildChatView(),
+              Positioned(
+                top: 0,
+                right: 16,
+                child: SlideTransition(
+                  position: _bannerOffsetAnim,
+                  child: SizeTransition(
+                    sizeFactor: _sizeAnim,
+                    axis: Axis.horizontal,
+                    axisAlignment: 1.0,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => context.router.pop(),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ColorConstant.primary,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.15),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  "Lewati ke halaman materi?",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_upward_rounded,
+                                  color: Colors.white,
+                                  size: 14,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -432,10 +527,18 @@ class _ChatPageState extends State<ChatPage> {
         ],
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.more_vert_rounded, color: ColorConstant.black),
-          onPressed: () {},
+        TextButton(
+          onPressed: () => context.router.pop(),
+          child: const Text(
+            "Lewati",
+            style: TextStyle(
+              color: ColorConstant.primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
         ),
+        const SizedBox(width: 8),
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
