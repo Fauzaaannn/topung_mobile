@@ -28,11 +28,16 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) return;
 
     final token = await _secureStorage.getToken();
+    final role = await _secureStorage.getRole();
 
     if (token == null || token.isEmpty) {
       context.router.replace(const LoginRoute());
     } else {
-      context.router.replaceAll([const NavbarRoute(), ChatRoute()]);
+      if (role == 'admin') {
+        context.router.replaceAll([const NavbarRoute()]);
+      } else {
+        context.router.replaceAll([const NavbarRoute(), ChatRoute()]);
+      }
     }
   }
 
@@ -61,7 +66,10 @@ class _SplashPageState extends State<SplashPage> {
                   builder: (context, value, child) {
                     return Transform.scale(
                       scale: value,
-                      child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
+                      child: Opacity(
+                        opacity: value.clamp(0.0, 1.0),
+                        child: child,
+                      ),
                     );
                   },
                   child: Container(
@@ -77,7 +85,11 @@ class _SplashPageState extends State<SplashPage> {
                         ),
                       ],
                     ),
-                    child: Image.asset('asset/app_icon.png', width: 80, height: 80),
+                    child: Image.asset(
+                      'asset/app_icon.png',
+                      width: 80,
+                      height: 80,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -86,7 +98,10 @@ class _SplashPageState extends State<SplashPage> {
                   duration: const Duration(milliseconds: 1000),
                   curve: Curves.easeIn,
                   builder: (context, value, child) {
-                    return Opacity(opacity: value.clamp(0.0, 1.0), child: child);
+                    return Opacity(
+                      opacity: value.clamp(0.0, 1.0),
+                      child: child,
+                    );
                   },
                   child: const Text(
                     'TopungEdu',
