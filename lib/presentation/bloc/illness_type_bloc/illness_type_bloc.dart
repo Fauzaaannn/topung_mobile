@@ -18,7 +18,19 @@ class IllnessTypeBloc extends Bloc<IllnessTypeEvent, IllnessTypeState> {
     IllnessTypeFetched event,
     Emitter<IllnessTypeState> emit,
   ) async {
-    emit(IllnessTypeLoading());
+    if (state is IllnessTypeSuccess) {
+      final currentState = state as IllnessTypeSuccess;
+      if (currentState.hasReachedMax && event.page != 1) return;
+      
+      if (event.page == 1) {
+        emit(IllnessTypeLoading());
+      } else {
+        if (currentState.isFetchingMore) return;
+        emit(currentState.copyWith(isFetchingMore: true));
+      }
+    } else {
+      emit(IllnessTypeLoading());
+    }
 
     final result = await _illnessTypeUsecase(
       categoryId: event.categoryId,
@@ -28,8 +40,35 @@ class IllnessTypeBloc extends Bloc<IllnessTypeEvent, IllnessTypeState> {
     );
 
     result.fold(
-      (failure) => emit(IllnessTypeFailure(message: failure)),
-      (data) => emit(IllnessTypeSuccess(data: data)),
+      (failure) {
+        if (state is IllnessTypeSuccess) {
+           final currentState = state as IllnessTypeSuccess;
+           emit(currentState.copyWith(isFetchingMore: false));
+        } else {
+           emit(IllnessTypeFailure(message: failure));
+        }
+      },
+      (data) {
+        if (state is IllnessTypeSuccess && event.page > 1) {
+          final currentState = state as IllnessTypeSuccess;
+          final newItems = List<IllnessTypeModel>.from(currentState.data.items)..addAll(data.items);
+          final newData = IllnessTypePaginationModel(
+            items: newItems,
+            pagination: data.pagination,
+          );
+          emit(IllnessTypeSuccess(
+            data: newData,
+            hasReachedMax: data.items.isEmpty || data.pagination.page >= data.pagination.totalPages,
+            isFetchingMore: false,
+          ));
+        } else {
+          emit(IllnessTypeSuccess(
+            data: data,
+            hasReachedMax: data.items.isEmpty || data.pagination.page >= data.pagination.totalPages,
+            isFetchingMore: false,
+          ));
+        }
+      },
     );
   }
 }
