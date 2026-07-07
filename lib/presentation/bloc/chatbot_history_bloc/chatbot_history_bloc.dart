@@ -26,6 +26,8 @@ class ChatbotHistoryBloc extends Bloc<ChatbotHistoryEvent, ChatbotHistoryState> 
       page: event.page,
       pageSize: event.pageSize,
       search: event.search,
+      filter: event.filter,
+      sort: event.sort,
     );
 
     result.fold(

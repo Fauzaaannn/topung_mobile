@@ -15,12 +15,16 @@ class ChatbotHistoryRepositoryImpl implements ChatbotHistoryRepository {
     int page = 1,
     int pageSize = 10,
     String search = '',
+    List<Map<String, dynamic>>? filter,
+    List<Map<String, dynamic>>? sort,
   }) async {
     try {
       final result = await _remoteProvider.getChatbotHistoriesPagination(
         page: page,
         pageSize: pageSize,
         search: search,
+        filter: filter,
+        sort: sort,
       );
       return Right(result);
     } on DioException catch (e) {

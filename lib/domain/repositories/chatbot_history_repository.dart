@@ -6,6 +6,8 @@ abstract class ChatbotHistoryRepository {
     int page = 1,
     int pageSize = 10,
     String search = '',
+    List<Map<String, dynamic>>? filter,
+    List<Map<String, dynamic>>? sort,
   });
 
   Future<Either<String, ChatbotMessagePaginationModel>> getChatbotHistoryByIdPagination({

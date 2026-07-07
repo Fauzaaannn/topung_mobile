@@ -13,14 +13,16 @@ class ChatbotHistoryRemoteProvider implements IChatbotHistoryRemoteProvider {
     int page = 1,
     int pageSize = 10,
     String search = '',
+    List<Map<String, dynamic>>? filter,
+    List<Map<String, dynamic>>? sort,
   }) async {
     final response = await _dio.post(
       EndpointConstant.chatbotHistoryPagination,
       data: {
         'data': {
-          'filter': [],
-          'sort': [
-            {'field': 'createdAt', 'direction': 'desc'},
+          'filter': filter ?? [],
+          'sort': sort ?? [
+            {'field': 'lastActivity', 'direction': 'desc'},
           ],
           'search': search,
           'expression': '',

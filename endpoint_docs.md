@@ -28,7 +28,7 @@ DB_PASSWORD=postgres
 DB_NAME=topung_db
 
 JWT_SECRET=your-real-secret
-JWT_EXPIRES_IN=1d
+JWT_EXPIRES_IN=14d
 ```
 
 2. Pastikan tabel PostgreSQL sudah dibuat di `topung_db`.
@@ -136,6 +136,12 @@ Auth: `Bearer user/admin`
 ### `POST /categories/pagination`
 
 Auth: `Bearer user/admin`
+
+**Fitur Pagination:**
+- **`search`**: Didukung (Mencari teks pada kolom `name` dan `description`).
+- **`filter`**: Belum didukung.
+- **`sort`**: Belum didukung (Default diurutkan berdasarkan `id` terbaru/descending).
+
 Payload contoh:
 
 ```json
@@ -163,8 +169,12 @@ Payload contoh:
 
 Auth: `Bearer user/admin`
 
-- Bisa filter `category_id` di `data.filter`
-  Contoh:
+**Fitur Pagination:**
+- **`search`**: Didukung (Mencari teks pada kolom `title` dan `text_content`).
+- **`filter`**: Hanya mendukung filter spesifik pada kolom `category_id` (lihat contoh).
+- **`sort`**: Belum didukung (Default diurutkan berdasarkan `created_at` terbaru/descending).
+
+Contoh payload untuk filter `category_id`:
 
 ```json
 {
@@ -291,10 +301,43 @@ Payload:
 
 Auth: `Bearer user/admin`
 
-- Payload: format pagination standar
+- **Payload**: Menggunakan format pagination standar (`PaginationRequestDto`). Mendukung penuh fitur `search`, `filter`, dan `sort`.
 - **Response**: Mengembalikan daftar sesi percakapan (unik per `conversationId`). Judul diambil dari pertanyaan pertama setiap sesi.
 
-Contoh Response API:
+#### Contoh Request Payload
+
+```json
+{
+  "data": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 10
+    },
+    "search": "punggung",
+    "filter": [
+      {
+        "field": "lastActivity",
+        "operator": "gte",
+        "value": "2026-07-01T00:00:00.000Z"
+      }
+    ],
+    "sort": [
+      {
+        "field": "lastActivity",
+        "direction": "desc"
+      }
+    ]
+  }
+}
+```
+
+**Penjelasan Payload:**
+- **`pagination`**: Menentukan halaman (`page`) dan jumlah data per halaman (`pageSize`).
+- **`search`** (Global Search): Opsional. Digunakan untuk mencari kata kunci secara luas yang akan dicocokkan dengan atribut `title`.
+- **`filter`**: Opsional. Array yang berisi objek filter per-kolom. Mendukung operator standar (`eq`, `neq`, `like`) serta komparasi tanggal/angka (`gt`, `gte`, `lt`, `lte`).
+- **`sort`**: Opsional. Menentukan pengurutan berdasarkan `field` tertentu, dengan arah `direction` `asc` (naik) atau `desc` (turun). Default-nya adalah `lastActivity` `desc`.
+
+#### Contoh Response API:
 
 ```json
 {

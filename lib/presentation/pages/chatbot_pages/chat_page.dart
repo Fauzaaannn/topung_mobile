@@ -948,78 +948,80 @@ class _ChatPageState extends State<ChatPage>
   }
 
   Widget _buildFloatingInputBar(bool isLoading) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      color: Colors.transparent,
+    return SafeArea(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        decoration: BoxDecoration(
-          color: ColorConstant.white,
-          borderRadius: BorderRadius.circular(32),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                controller: _messageController,
-                focusNode: _focusNode,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) => _sendMessage(),
-                enabled: !isLoading,
-                style: const TextStyle(fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: isLoading
-                      ? 'Topung sedang mengetik...'
-                      : 'Ketik sesuatu...',
-                  hintStyle: TextStyle(
-                    color: ColorConstant.greyDark.withOpacity(0.6),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+        color: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          decoration: BoxDecoration(
+            color: ColorConstant.white,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  focusNode: _focusNode,
+                  textInputAction: TextInputAction.send,
+                  onSubmitted: (_) => _sendMessage(),
+                  enabled: !isLoading,
+                  style: const TextStyle(fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: isLoading
+                        ? 'Topung sedang mengetik...'
+                        : 'Ketik sesuatu...',
+                    hintStyle: TextStyle(
+                      color: ColorConstant.greyDark.withOpacity(0.6),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            GestureDetector(
-              onTap: isLoading ? null : _sendMessage,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF00BCD4), Color(0xFF0097A7)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: isLoading ? null : _sendMessage,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00BCD4), Color(0xFF0097A7)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      if (!isLoading)
+                        BoxShadow(
+                          color: ColorConstant.primary.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                    ],
                   ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    if (!isLoading)
-                      BoxShadow(
-                        color: ColorConstant.primary.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                  ],
-                ),
-                child: Icon(
-                  isLoading
-                      ? Icons.hourglass_empty_rounded
-                      : Icons.send_rounded,
-                  color: ColorConstant.white,
-                  size: 20,
+                  child: Icon(
+                    isLoading
+                        ? Icons.hourglass_empty_rounded
+                        : Icons.send_rounded,
+                    color: ColorConstant.white,
+                    size: 20,
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
